@@ -1,18 +1,27 @@
 package hr.tvz.popovic.chessengine;
 
 import hr.tvz.popovic.chessengine.model.Piece;
+import lombok.Data;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+@Data
 @Component
 public class Board {
 
-    private final ArrayList<Piece> board;
+    private final List<Piece> board = Arrays.asList(new Piece[64]);
+    private Boolean isWhiteTurn = true;
+    private Boolean isWhiteKingSideCastle = true;
+    private Boolean isWhiteQueenSideCastle = true;
+    private Boolean isBlackKingSideCastle = true;
+    private Boolean isBlackQueenSideCastle = true;
+    private Integer enPassantSquare = -1;
+    private Integer halfMoveClock = 0;
+    private Integer fullMoveNumber = 1;
 
     public Board() {
-        board = new ArrayList<>(64);
         initializeBoard();
     }
 
