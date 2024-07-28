@@ -21,7 +21,6 @@ public enum Piece {
     private static final Map<Piece, Character> FEN_MAP = new HashMap<>();
 
     static {
-        FEN_MAP.put(EMPTY, ' ');
         FEN_MAP.put(WHITE_KING, 'K');
         FEN_MAP.put(WHITE_ROOK, 'R');
         FEN_MAP.put(WHITE_BISHOP, 'B');
@@ -36,7 +35,7 @@ public enum Piece {
         FEN_MAP.put(BLACK_PAWN, 'p');
     }
 
-    public static Character toFEN(Piece piece) {
+    public static Character toFen(Piece piece) {
         return FEN_MAP.get(piece);
     }
 }
