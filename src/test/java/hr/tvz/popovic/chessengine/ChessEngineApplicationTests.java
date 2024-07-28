@@ -1,0 +1,13 @@
+package hr.tvz.popovic.chessengine;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class ChessEngineApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}
