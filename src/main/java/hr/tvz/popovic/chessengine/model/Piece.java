@@ -1,6 +1,6 @@
 package hr.tvz.popovic.chessengine.model;
 
-public enum Pieces {
+public enum Piece {
     EMPTY,
     WHITE_KING,
     WHITE_ROOK,
