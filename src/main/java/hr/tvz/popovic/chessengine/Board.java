@@ -4,6 +4,7 @@ import hr.tvz.popovic.chessengine.model.Piece;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
 @Component
 public class Board {
 
-    private final List<Piece> board = Arrays.asList(new Piece[64]);
+    private final List<Piece> board = new ArrayList<>(64);
     private Boolean isWhiteTurn = true;
     private Boolean isWhiteKingSideCastle = true;
     private Boolean isWhiteQueenSideCastle = true;
