@@ -1,8 +1,12 @@
-package hr.tvz.popovic.chessengine.model;
+package hr.tvz.popovic.chessengine;
+
+import hr.tvz.popovic.chessengine.model.Piece;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+@Component
 public class Board {
 
     private final ArrayList<Piece> board;
