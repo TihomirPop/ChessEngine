@@ -1,12 +1,15 @@
 package hr.tvz.popovic.chessengine.model;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Data
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Board {
 
     private final List<Piece> board = new ArrayList<>(64);
@@ -37,6 +40,14 @@ public class Board {
         copy.halfMoveClock = halfMoveClock;
         copy.fullMoveNumber = fullMoveNumber;
         return copy;
+    }
+
+    public static Board createEmptyBoard() {
+        Board emptyBoard = new Board();
+        for (int i = 0; i < 64; i++) {
+            emptyBoard.board.add(Piece.EMPTY);
+        }
+        return emptyBoard;
     }
 
     private void initializeBoard() {
