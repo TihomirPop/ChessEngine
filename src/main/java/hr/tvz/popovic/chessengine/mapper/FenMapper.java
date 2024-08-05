@@ -1,30 +1,24 @@
 package hr.tvz.popovic.chessengine.mapper;
 
-import hr.tvz.popovic.chessengine.Board;
+import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Piece;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
 public class FenMapper {
 
-    private final Board boardState;
-
-    public String toFen() {
+    public static String toFen(Board boardState) {
         var fenBuilder = new StringBuilder();
 
-        piecesToFen(fenBuilder);
-        activeColorToFen(fenBuilder);
-        castlingRightsToFen(fenBuilder);
-        enPassantTargetsToFen(fenBuilder);
-        halfMoveClockToFen(fenBuilder);
-        fullMoveClockToFen(fenBuilder);
+        piecesToFen(boardState, fenBuilder);
+        activeColorToFen(boardState, fenBuilder);
+        castlingRightsToFen(boardState, fenBuilder);
+        enPassantTargetsToFen(boardState, fenBuilder);
+        halfMoveClockToFen(boardState, fenBuilder);
+        fullMoveClockToFen(boardState, fenBuilder);
 
         return fenBuilder.toString();
     }
 
-    private void piecesToFen(StringBuilder fenBuilder) {
+    private static void piecesToFen(Board boardState, StringBuilder fenBuilder) {
         var board = boardState.getBoard();
         var emptySpaces = 0;
 
@@ -51,23 +45,23 @@ public class FenMapper {
         }
     }
 
-    private void activeColorToFen(StringBuilder fenBuilder) {
+    private static void activeColorToFen(Board boardState, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
-        fenBuilder.append(boardState.getIsWhiteTurn() ? "w" : "b");
+        fenBuilder.append(boardState.isWhiteTurn() ? "w" : "b");
     }
 
-    private void castlingRightsToFen(StringBuilder fenBuilder) {
+    private static void castlingRightsToFen(Board boardState, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
-        boolean hasAnyCastlingRights = appendIfTrue(fenBuilder, boardState.getIsWhiteKingSideCastle(), "K") |
-                appendIfTrue(fenBuilder, boardState.getIsWhiteQueenSideCastle(), "Q") |
-                appendIfTrue(fenBuilder, boardState.getIsBlackKingSideCastle(), "k") |
-                appendIfTrue(fenBuilder, boardState.getIsBlackQueenSideCastle(), "q");
+        boolean hasAnyCastlingRights = appendIfTrue(fenBuilder, boardState.isWhiteKingSideCastle(), "K") |
+                appendIfTrue(fenBuilder, boardState.isWhiteQueenSideCastle(), "Q") |
+                appendIfTrue(fenBuilder, boardState.isBlackKingSideCastle(), "k") |
+                appendIfTrue(fenBuilder, boardState.isBlackQueenSideCastle(), "q");
         if (!hasAnyCastlingRights) {
             fenBuilder.append("-");
         }
     }
 
-    private boolean appendIfTrue(StringBuilder fenBuilder, boolean condition, String value) {
+    private static boolean appendIfTrue(StringBuilder fenBuilder, boolean condition, String value) {
         if (condition) {
             fenBuilder.append(value);
             return true;
@@ -75,7 +69,7 @@ public class FenMapper {
         return false;
     }
 
-    private void enPassantTargetsToFen(StringBuilder fenBuilder) {
+    private static void enPassantTargetsToFen(Board boardState, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
         if (boardState.getEnPassantSquare() != -1) {
             fenBuilder.append(AlgebraicNotationMapper.toAlgebraicNotation(boardState.getEnPassantSquare()));
@@ -84,12 +78,12 @@ public class FenMapper {
         }
     }
 
-    private void halfMoveClockToFen(StringBuilder fenBuilder) {
+    private static void halfMoveClockToFen(Board boardState, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
         fenBuilder.append(boardState.getHalfMoveClock());
     }
 
-    private void fullMoveClockToFen(StringBuilder fenBuilder) {
+    private static void fullMoveClockToFen(Board boardState, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
         fenBuilder.append(boardState.getFullMoveNumber());
     }

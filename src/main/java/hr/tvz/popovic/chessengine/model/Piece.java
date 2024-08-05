@@ -2,6 +2,7 @@ package hr.tvz.popovic.chessengine.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public enum Piece {
     EMPTY,
@@ -19,6 +20,22 @@ public enum Piece {
     BLACK_PAWN;
 
     private static final Map<Piece, Character> FEN_MAP = new HashMap<>();
+    public static final Set<Piece> WHITE_PIECES = Set.of(
+            WHITE_KING,
+            WHITE_ROOK,
+            WHITE_BISHOP,
+            WHITE_QUEEN,
+            WHITE_KNIGHT,
+            WHITE_PAWN
+    );
+    public static final Set<Piece> BLACK_PIECES = Set.of(
+            BLACK_KING,
+            BLACK_ROOK,
+            BLACK_BISHOP,
+            BLACK_QUEEN,
+            BLACK_KNIGHT,
+            BLACK_PAWN
+    );
 
     static {
         FEN_MAP.put(WHITE_KING, 'K');

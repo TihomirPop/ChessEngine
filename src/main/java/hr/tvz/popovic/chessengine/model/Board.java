@@ -1,29 +1,42 @@
-package hr.tvz.popovic.chessengine;
+package hr.tvz.popovic.chessengine.model;
 
-import hr.tvz.popovic.chessengine.model.Piece;
 import lombok.Data;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Data
-@Component
 public class Board {
 
     private final List<Piece> board = new ArrayList<>(64);
-    private Boolean isWhiteTurn = true;
-    private Boolean isWhiteKingSideCastle = true;
-    private Boolean isWhiteQueenSideCastle = true;
-    private Boolean isBlackKingSideCastle = true;
-    private Boolean isBlackQueenSideCastle = true;
-    private Integer enPassantSquare = -1;
-    private Integer halfMoveClock = 0;
-    private Integer fullMoveNumber = 1;
+    private boolean isWhiteTurn = true;
+    private boolean isWhiteKingSideCastle = true;
+    private boolean isWhiteQueenSideCastle = true;
+    private boolean isBlackKingSideCastle = true;
+    private boolean isBlackQueenSideCastle = true;
+    private int enPassantSquare = -1;
+    private int halfMoveClock = 0;
+    private int fullMoveNumber = 1;
 
-    public Board() {
-        initializeBoard();
+    public static Board createInitialBoard() {
+        Board board = new Board();
+        board.initializeBoard();
+        return board;
+    }
+
+    public Board createCopy() {
+        Board copy = new Board();
+        copy.board.addAll(board);
+        copy.isWhiteTurn = isWhiteTurn;
+        copy.isWhiteKingSideCastle = isWhiteKingSideCastle;
+        copy.isWhiteQueenSideCastle = isWhiteQueenSideCastle;
+        copy.isBlackKingSideCastle = isBlackKingSideCastle;
+        copy.isBlackQueenSideCastle = isBlackQueenSideCastle;
+        copy.enPassantSquare = enPassantSquare;
+        copy.halfMoveClock = halfMoveClock;
+        copy.fullMoveNumber = fullMoveNumber;
+        return copy;
     }
 
     private void initializeBoard() {
