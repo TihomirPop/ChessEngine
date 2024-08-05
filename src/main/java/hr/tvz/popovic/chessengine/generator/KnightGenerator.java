@@ -13,8 +13,8 @@ public class KnightGenerator implements Generator {
     @Override
     public List<Move> from(Board board, int from) {
         return IntStream.of(from - 17, from - 15, from - 10, from - 6, from + 6, from + 10, from + 15, from + 17)
-                .filter(GeneratorUtils::isIndexInBounds)
-                .filter(to -> GeneratorUtils.isPieceOnIndexNotFriendly(board, to))
+                .filter(Generator::isIndexInBounds)
+                .filter(to -> Generator.isPieceOnIndexNotFriendly(board, to))
                 .filter(to -> isValidKnightMove(from, to))
                 .mapToObj(to -> new Move(from, to))
                 .toList();
