@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @Component
-public class KnightGenerator implements Generator {
+class KnightGenerator extends Generator {
 
     @Override
     public List<Move> from(Board board, int from) {

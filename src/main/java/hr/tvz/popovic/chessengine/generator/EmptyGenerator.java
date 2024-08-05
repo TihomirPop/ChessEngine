@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-class KingGenerator extends Generator {
+public class EmptyGenerator extends Generator {
 
     @Override
     public List<Move> from(Board board, int from) {

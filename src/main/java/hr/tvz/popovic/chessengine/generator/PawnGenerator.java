@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PawnGenerator implements Generator {
+class PawnGenerator extends Generator {
 
     @Override
     public List<Move> from(Board board, int from) {

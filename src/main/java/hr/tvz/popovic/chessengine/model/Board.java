@@ -50,6 +50,14 @@ public class Board {
         return emptyBoard;
     }
 
+    public static int getRow(int index) {
+        return 8 - (index / 8);
+    }
+
+    public static int getColumn(int index) {
+        return index % 8 + 1;
+    }
+
     private void initializeBoard() {
         addPieces(
                 Piece.BLACK_ROOK,

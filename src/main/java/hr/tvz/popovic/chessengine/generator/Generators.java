@@ -4,7 +4,6 @@ import hr.tvz.popovic.chessengine.model.Piece;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -18,7 +17,8 @@ public class Generators {
             BishopGenerator bishopGenerator,
             QueenGenerator queenGenerator,
             KnightGenerator knightGenerator,
-            PawnGenerator pawnGenerator
+            PawnGenerator pawnGenerator,
+            EmptyGenerator emptyGenerator
     ) {
         pieceToGenerator = HashMap.newHashMap(13);
         pieceToGenerator.put(Piece.WHITE_KING, kingGenerator);
@@ -33,7 +33,7 @@ public class Generators {
         pieceToGenerator.put(Piece.BLACK_QUEEN, queenGenerator);
         pieceToGenerator.put(Piece.BLACK_KNIGHT, knightGenerator);
         pieceToGenerator.put(Piece.BLACK_PAWN, pawnGenerator);
-        pieceToGenerator.put(Piece.EMPTY, (board, from) -> List.of());
+        pieceToGenerator.put(Piece.EMPTY, emptyGenerator);
     }
 
     public Generator generateFor(Piece piece) {

@@ -6,10 +6,9 @@ import hr.tvz.popovic.chessengine.model.Piece;
 
 import java.util.List;
 
-public interface Generator {
+public abstract class Generator {
 
-    List<Move> from(Board board, int from);
-
+    abstract List<Move> from(Board board, int from);
 
     static boolean isIndexInBounds(int index) {
         return index >= 0 && index < 64;
