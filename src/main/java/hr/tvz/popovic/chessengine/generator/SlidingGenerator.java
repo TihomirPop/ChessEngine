@@ -17,7 +17,7 @@ abstract class SlidingGenerator extends Generator {
 
         while (true) {
             to += offset;
-            if ((directionType == Direction.Type.VERTICAL || directionType == Direction.Type.DIAGONAL) && !Generator.isIndexInBounds(to)) {
+            if (directionType == Direction.Type.VERTICAL && !Generator.isIndexInBounds(to)) {
                 break;
             }
 
@@ -25,7 +25,7 @@ abstract class SlidingGenerator extends Generator {
                 break;
             }
 
-            if (directionType == Direction.Type.DIAGONAL && didNotGoDiagonally(from, to)) {
+            if (directionType == Direction.Type.DIAGONAL && (didNotGoDiagonally(from, to) || !Generator.isIndexInBounds(to))) {
                 break;
             }
 
