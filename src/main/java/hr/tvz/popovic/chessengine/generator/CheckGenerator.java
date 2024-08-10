@@ -17,7 +17,7 @@ public class CheckGenerator extends SlidingGenerator {
         return List.of();
     }
 
-    protected static List<Move> generateSlidingMoves(Board boardState, int from, Direction direction) {
+    private static List<Move> generateSlidingAttacks(Board board, int from, Direction direction) {
         var offset = direction.getOffset();
         var directionType = direction.getType();
         var to = from;
@@ -29,11 +29,11 @@ public class CheckGenerator extends SlidingGenerator {
             if (!Generator.isIndexInBounds(to) ||
                     (directionType == Direction.Type.HORIZONTAL && wentToNewRow(from, to)) ||
                     (directionType == Direction.Type.DIAGONAL && didNotGoDiagonally(from, to)) ||
-                    Generator.isPieceOnIndexFriendly(boardState, to)) {
+                    Generator.isPieceOnIndexFriendly(board, to)) {
                 break;
             }
 
-            var piece = boardState.getPiece(to);
+            var piece = board.getPiece(to);
             var isRookOrQueen = piece == Piece.WHITE_ROOK || piece == Piece.WHITE_QUEEN || piece == Piece.BLACK_ROOK || piece == Piece.BLACK_QUEEN;
             var isBishopOrQueen = piece == Piece.WHITE_BISHOP || piece == Piece.WHITE_QUEEN || piece == Piece.BLACK_BISHOP || piece == Piece.BLACK_QUEEN;
 
@@ -42,6 +42,23 @@ public class CheckGenerator extends SlidingGenerator {
                 moves.add(new Move(from, to));
                 break;
             }
+        }
+
+        return moves;
+    }
+
+    private static List<Move> generatePawnAttacks(Board board, int from) {
+        var direction = board.isWhiteTurn() ? Direction.UP.getOffset() : Direction.DOWN.getOffset();
+        var opponent = board.isWhiteTurn() ? Piece.BLACK_PAWN : Piece.WHITE_PAWN;
+        var leftAttack = from + direction + Direction.LEFT.getOffset();
+        var rightAttack = from + direction + Direction.RIGHT.getOffset();
+        List<Move> moves = new ArrayList<>();
+
+        if (Generator.isIndexInBounds(leftAttack) && Board.getColumn(from) != 1 && board.getPiece(leftAttack) == opponent) {
+            moves.add(new Move(from, leftAttack));
+        }
+        if (Generator.isIndexInBounds(rightAttack) &&  Board.getColumn(from) != 8 && board.getPiece(rightAttack) == opponent) {
+            moves.add(new Move(from, rightAttack));
         }
 
         return moves;

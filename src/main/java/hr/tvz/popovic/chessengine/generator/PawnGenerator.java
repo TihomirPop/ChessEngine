@@ -28,11 +28,11 @@ class PawnGenerator extends Generator {
         var leftCapture = to + Direction.LEFT.getOffset();
         var rightCapture = to + Direction.RIGHT.getOffset();
 
-        if (isPieceOnIndexOpponent(board, leftCapture) && Board.getColumn(from) != 1) {
+        if (Board.getColumn(from) != 1 && isPieceOnIndexOpponent(board, leftCapture)) {
             moves.add(new Move(from, leftCapture));
         }
 
-        if (isPieceOnIndexOpponent(board, rightCapture) && Board.getColumn(from) != 8) {
+        if (Board.getColumn(from) != 8 && isPieceOnIndexOpponent(board, rightCapture)) {
             moves.add(new Move(from, rightCapture));
         }
 
