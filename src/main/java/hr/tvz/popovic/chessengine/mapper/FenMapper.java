@@ -31,7 +31,7 @@ public class FenMapper {
                     fenBuilder.append(emptySpaces);
                     emptySpaces = 0;
                 }
-                fenBuilder.append(Piece.toFen(piece));
+                fenBuilder.append(piece.toFen());
             }
             if ((i + 1) % 8 == 0) {
                 if (emptySpaces > 0) {

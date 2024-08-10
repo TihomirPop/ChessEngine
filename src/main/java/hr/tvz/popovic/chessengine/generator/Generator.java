@@ -8,7 +8,7 @@ import java.util.List;
 
 public abstract class Generator {
 
-    abstract List<Move> from(Board board, int from);
+    public abstract List<Move> from(Board board, int from);
 
     static boolean isIndexInBounds(int index) {
         return index >= 0 && index < 64;

@@ -1,14 +1,14 @@
 package hr.tvz.popovic.chessengine.model;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Data
+@Setter
+@Getter
+@EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Board {
 
@@ -58,6 +58,18 @@ public class Board {
         return index % 8 + 1;
     }
 
+    public boolean isCurrentPlayerPiece(int index) {
+        return isWhiteTurn ?
+                Piece.WHITE_PIECES.contains(board.get(index)) :
+                Piece.BLACK_PIECES.contains(board.get(index));
+    }
+
+    public void makeMove(Move move) {
+        board.set(move.to(), board.get(move.from()));
+        board.set(move.from(), Piece.EMPTY);
+        setWhiteTurn(!isWhiteTurn);
+    }
+
     private void initializeBoard() {
         addPieces(
                 Piece.BLACK_ROOK,
@@ -98,6 +110,18 @@ public class Board {
         for (int i = 0; i < 32; i++) {
             board.add(Piece.EMPTY);
         }
+    }
+
+    @Override
+    public String toString() {
+        var sb = new StringBuilder();
+        for (var i = 0; i < 64; i++) {
+            sb.append(board.get(i).toFen()).append(" ");
+            if (i % 8 == 7) {
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 
 }

@@ -1,10 +1,14 @@
 package hr.tvz.popovic.chessengine.generator;
 
+import hr.tvz.popovic.chessengine.model.Board;
+import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 @Component
 public class Generators {
@@ -38,6 +42,14 @@ public class Generators {
 
     public Generator generateFor(Piece piece) {
         return pieceToGenerator.get(piece);
+    }
+
+    public List<Move> generateAllMovesWithoutCheckValidation(Board board) {
+        return IntStream.range(0, 64)
+                .filter(board::isCurrentPlayerPiece)
+                .mapToObj(i -> generateFor(board.getBoard().get(i)).from(board, i))
+                .flatMap(List::stream)
+                .toList();
     }
 
 }

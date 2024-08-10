@@ -50,9 +50,10 @@ public enum Piece {
         FEN_MAP.put(BLACK_QUEEN, 'q');
         FEN_MAP.put(BLACK_KNIGHT, 'n');
         FEN_MAP.put(BLACK_PAWN, 'p');
+        FEN_MAP.put(EMPTY, '_');
     }
 
-    public static Character toFen(Piece piece) {
-        return FEN_MAP.get(piece);
+    public Character toFen() {
+        return FEN_MAP.get(this);
     }
 }
