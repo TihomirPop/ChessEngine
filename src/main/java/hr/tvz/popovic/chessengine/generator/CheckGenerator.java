@@ -7,6 +7,7 @@ import hr.tvz.popovic.chessengine.model.Piece;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -15,7 +16,19 @@ public class CheckGenerator extends SlidingGenerator {
 
     @Override
     public List<Move> from(Board board, int from) {
-        return List.of();
+        var moves = generatePawnAttacks(board, from);
+        moves.addAll(generateKnightAttacks(board, from));
+        moves.addAll(generateKingAttacks(board, from));
+        moves.addAll(generateAllSlidingAttacks(board, from));
+
+        return moves;
+    }
+
+    private static List<Move> generateAllSlidingAttacks(Board board, int from) {
+        return Arrays.stream(Direction.values())
+                .map(direction -> generateSlidingAttacks(board, from, direction))
+                .flatMap(List::stream)
+                .toList();
     }
 
     private static List<Move> generateSlidingAttacks(Board board, int from, Direction direction) {
@@ -58,7 +71,7 @@ public class CheckGenerator extends SlidingGenerator {
         if (Generator.isIndexInBounds(leftAttack) && Board.getColumn(from) != 1 && board.getPiece(leftAttack) == opponent) {
             moves.add(new Move(from, leftAttack));
         }
-        if (Generator.isIndexInBounds(rightAttack) &&  Board.getColumn(from) != 8 && board.getPiece(rightAttack) == opponent) {
+        if (Generator.isIndexInBounds(rightAttack) && Board.getColumn(from) != 8 && board.getPiece(rightAttack) == opponent) {
             moves.add(new Move(from, rightAttack));
         }
 
@@ -72,6 +85,17 @@ public class CheckGenerator extends SlidingGenerator {
                 .filter(to -> KnightGenerator.isValidKnightMove(from, to))
                 .filter(to -> board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT))
                 .mapToObj(to -> new Move(from, to))
+                .toList();
+    }
+
+    private static List<Move> generateKingAttacks(Board board, int from) {
+        return Arrays.stream(Direction.values())
+                .map(direction -> from + direction.getOffset())
+                .filter(Generator::isIndexInBounds)
+                .filter(to -> Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1)
+                .filter(to -> Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1)
+                .filter(to -> board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KING : Piece.WHITE_KING))
+                .map(to -> new Move(from, to))
                 .toList();
     }
 

@@ -59,6 +59,8 @@ class KingGenerator extends Generator {
         return Arrays.stream(Direction.values())
                 .map(direction -> from + direction.getOffset())
                 .filter(Generator::isIndexInBounds)
+                .filter(to -> Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1)
+                .filter(to -> Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1)
                 .filter(to -> Generator.isPieceOnIndexNotFriendly(board, to))
                 .map(to -> new Move(from, to))
                 .toList();
