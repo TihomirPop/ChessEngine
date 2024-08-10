@@ -5,15 +5,15 @@ import hr.tvz.popovic.chessengine.model.Piece;
 
 public class FenMapper {
 
-    public static String toFen(Board boardState) {
+    public static String toFen(Board board) {
         var fenBuilder = new StringBuilder();
 
-        piecesToFen(boardState, fenBuilder);
-        activeColorToFen(boardState, fenBuilder);
-        castlingRightsToFen(boardState, fenBuilder);
-        enPassantTargetsToFen(boardState, fenBuilder);
-        halfMoveClockToFen(boardState, fenBuilder);
-        fullMoveClockToFen(boardState, fenBuilder);
+        piecesToFen(board, fenBuilder);
+        activeColorToFen(board, fenBuilder);
+        castlingRightsToFen(board, fenBuilder);
+        enPassantTargetsToFen(board, fenBuilder);
+        halfMoveClockToFen(board, fenBuilder);
+        fullMoveClockToFen(board, fenBuilder);
 
         return fenBuilder.toString();
     }
@@ -44,17 +44,17 @@ public class FenMapper {
         }
     }
 
-    private static void activeColorToFen(Board boardState, StringBuilder fenBuilder) {
+    private static void activeColorToFen(Board board, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
-        fenBuilder.append(boardState.isWhiteTurn() ? "w" : "b");
+        fenBuilder.append(board.isWhiteTurn() ? "w" : "b");
     }
 
-    private static void castlingRightsToFen(Board boardState, StringBuilder fenBuilder) {
+    private static void castlingRightsToFen(Board board, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
-        boolean hasAnyCastlingRights = appendIfTrue(fenBuilder, boardState.isWhiteKingSideCastle(), "K") |
-                appendIfTrue(fenBuilder, boardState.isWhiteQueenSideCastle(), "Q") |
-                appendIfTrue(fenBuilder, boardState.isBlackKingSideCastle(), "k") |
-                appendIfTrue(fenBuilder, boardState.isBlackQueenSideCastle(), "q");
+        boolean hasAnyCastlingRights = appendIfTrue(fenBuilder, board.isWhiteKingSideCastle(), "K") |
+                appendIfTrue(fenBuilder, board.isWhiteQueenSideCastle(), "Q") |
+                appendIfTrue(fenBuilder, board.isBlackKingSideCastle(), "k") |
+                appendIfTrue(fenBuilder, board.isBlackQueenSideCastle(), "q");
         if (!hasAnyCastlingRights) {
             fenBuilder.append("-");
         }
@@ -68,23 +68,23 @@ public class FenMapper {
         return false;
     }
 
-    private static void enPassantTargetsToFen(Board boardState, StringBuilder fenBuilder) {
+    private static void enPassantTargetsToFen(Board board, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
-        if (boardState.getEnPassantSquare() != -1) {
-            fenBuilder.append(AlgebraicNotationMapper.toAlgebraicNotation(boardState.getEnPassantSquare()));
+        if (board.getEnPassantSquare() != -1) {
+            fenBuilder.append(AlgebraicNotationMapper.toAlgebraicNotation(board.getEnPassantSquare()));
         } else {
             fenBuilder.append("-");
         }
     }
 
-    private static void halfMoveClockToFen(Board boardState, StringBuilder fenBuilder) {
+    private static void halfMoveClockToFen(Board board, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
-        fenBuilder.append(boardState.getHalfMoveClock());
+        fenBuilder.append(board.getHalfMoveClock());
     }
 
-    private static void fullMoveClockToFen(Board boardState, StringBuilder fenBuilder) {
+    private static void fullMoveClockToFen(Board board, StringBuilder fenBuilder) {
         fenBuilder.append(" ");
-        fenBuilder.append(boardState.getFullMoveNumber());
+        fenBuilder.append(board.getFullMoveNumber());
     }
 
 }

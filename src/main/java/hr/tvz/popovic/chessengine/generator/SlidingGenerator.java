@@ -9,7 +9,7 @@ import java.util.List;
 
 abstract class SlidingGenerator extends Generator {
 
-    protected static List<Move> generateSlidingMoves(Board boardState, int from, Direction direction) {
+    protected static List<Move> generateSlidingMoves(Board board, int from, Direction direction) {
         var offset = direction.getOffset();
         var directionType = direction.getType();
         var to = from;
@@ -21,11 +21,11 @@ abstract class SlidingGenerator extends Generator {
             if (!Generator.isIndexInBounds(to) ||
                     (directionType == Direction.Type.HORIZONTAL && wentToNewRow(from, to)) ||
                     (directionType == Direction.Type.DIAGONAL && didNotGoDiagonally(from, to)) ||
-                    Generator.isPieceOnIndexFriendly(boardState, to)) {
+                    Generator.isPieceOnIndexFriendly(board, to)) {
                 break;
             }
 
-            if (Generator.isPieceOnIndexOpponent(boardState, to)) {
+            if (Generator.isPieceOnIndexOpponent(board, to)) {
                 moves.add(new Move(from, to));
                 break;
             }
