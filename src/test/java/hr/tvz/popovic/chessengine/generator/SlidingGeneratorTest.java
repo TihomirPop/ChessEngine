@@ -57,6 +57,16 @@ class SlidingGeneratorTest {
                 .containsExactlyInAnyOrder(new Move(0, 1), new Move(0, 2), new Move(0, 3));
     }
 
+    @Test
+    void shouldNotGoOutOfBoundWhenInCorner(){
+        var board = Board.createEmptyBoard();
+
+        board.getBoard().set(0, Piece.WHITE_ROOK);
+
+        List<Move> moves = new ArrayList<>(SlidingGenerator.generateSlidingMoves(board, 0, Direction.LEFT));
+
+        assertThat(moves).hasSize(0);
+    }
 
     private static List<Move> getExpectedMovesInAllDirections() {
         return List.of(
