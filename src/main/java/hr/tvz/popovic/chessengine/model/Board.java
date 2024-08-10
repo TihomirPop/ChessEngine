@@ -70,6 +70,10 @@ public class Board {
         setWhiteTurn(!isWhiteTurn);
     }
 
+    public Piece getPiece(int index) {
+        return board.get(index);
+    }
+
     private void initializeBoard() {
         addPieces(
                 Piece.BLACK_ROOK,
