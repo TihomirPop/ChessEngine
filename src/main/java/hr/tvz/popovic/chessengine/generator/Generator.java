@@ -15,12 +15,11 @@ public abstract class Generator {
     }
 
     static boolean isPieceOnIndexEmpty(Board board, int index) {
-        return board.getBoard().get(index) == Piece.EMPTY;
+        return board.getPiece(index) == Piece.EMPTY;
     }
 
     static boolean isPieceOnIndexNotFriendly(Board board, int index) {
-        var piece = board.getBoard()
-                .get(index);
+        var piece = board.getPiece(index);
 
         if (piece == Piece.EMPTY) {
             return true;
@@ -32,8 +31,7 @@ public abstract class Generator {
     }
 
     static boolean isPieceOnIndexOpponent(Board board, int index) {
-        var piece = board.getBoard()
-                .get(index);
+        var piece = board.getPiece(index);
 
         return board.isWhiteTurn() ?
                 Piece.BLACK_PIECES.contains(piece) :
@@ -41,8 +39,7 @@ public abstract class Generator {
     }
 
     static boolean isPieceOnIndexFriendly(Board board, int index) {
-        var piece = board.getBoard()
-                .get(index);
+        var piece = board.getPiece(index);
 
         return board.isWhiteTurn() ?
                 Piece.WHITE_PIECES.contains(piece) :

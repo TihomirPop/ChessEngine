@@ -35,8 +35,8 @@ class SlidingGeneratorTest {
     void shouldStopBeforeFriendly(){
         var board = Board.createEmptyBoard();
 
-        board.getBoard().set(0, Piece.WHITE_ROOK);
-        board.getBoard().set(3, Piece.WHITE_QUEEN);
+        board.setPiece(0, Piece.WHITE_ROOK);
+        board.setPiece(3, Piece.WHITE_QUEEN);
 
         List<Move> moves = new ArrayList<>(SlidingGenerator.generateSlidingMoves(board, 0, Direction.RIGHT));
 
@@ -48,8 +48,8 @@ class SlidingGeneratorTest {
     void shouldStopAtOpponent(){
         var board = Board.createEmptyBoard();
 
-        board.getBoard().set(0, Piece.WHITE_ROOK);
-        board.getBoard().set(3, Piece.BLACK_QUEEN);
+        board.setPiece(0, Piece.WHITE_ROOK);
+        board.setPiece(3, Piece.BLACK_QUEEN);
 
         List<Move> moves = new ArrayList<>(SlidingGenerator.generateSlidingMoves(board, 0, Direction.RIGHT));
 
@@ -61,7 +61,7 @@ class SlidingGeneratorTest {
     void shouldNotGoOutOfBoundWhenInCorner(){
         var board = Board.createEmptyBoard();
 
-        board.getBoard().set(0, Piece.WHITE_ROOK);
+        board.setPiece(0, Piece.WHITE_ROOK);
 
         List<Move> moves = new ArrayList<>(SlidingGenerator.generateSlidingMoves(board, 0, Direction.LEFT));
 

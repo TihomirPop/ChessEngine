@@ -18,12 +18,11 @@ public class FenMapper {
         return fenBuilder.toString();
     }
 
-    private static void piecesToFen(Board boardState, StringBuilder fenBuilder) {
-        var board = boardState.getBoard();
+    private static void piecesToFen(Board board, StringBuilder fenBuilder) {
         var emptySpaces = 0;
 
-        for (int i = 0; i < board.size(); i++) {
-            var piece = board.get(i);
+        for (var i = 0; i < board.size(); i++) {
+            var piece = board.getPiece(i);
             if (piece == Piece.EMPTY) {
                 emptySpaces++;
             } else {

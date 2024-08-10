@@ -74,6 +74,14 @@ public class Board {
         return board.get(index);
     }
 
+    public void setPiece(int index, Piece piece) {
+        board.set(index, piece);
+    }
+
+    public int size() {
+        return board.size();
+    }
+
     private void initializeBoard() {
         addPieces(
                 Piece.BLACK_ROOK,

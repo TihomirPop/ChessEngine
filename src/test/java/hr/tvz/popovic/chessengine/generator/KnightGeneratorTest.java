@@ -17,11 +17,10 @@ class KnightGeneratorTest {
     @Test
     void shouldReturnValidKnightMoves() {
         var board = Board.createEmptyBoard();
-        var boardPieces = board.getBoard();
 
-        boardPieces.set(1, Piece.WHITE_KNIGHT);
-        boardPieces.set(11, Piece.WHITE_PAWN);
-        boardPieces.set(16, Piece.BLACK_PAWN);
+        board.setPiece(1, Piece.WHITE_KNIGHT);
+        board.setPiece(11, Piece.WHITE_PAWN);
+        board.setPiece(16, Piece.BLACK_PAWN);
 
         var moves = knightGenerator.from(board, 1);
 

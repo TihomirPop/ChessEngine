@@ -47,7 +47,7 @@ public class Generators {
     public List<Move> generateAllMovesWithoutCheckValidation(Board board) {
         return IntStream.range(0, 64)
                 .filter(board::isCurrentPlayerPiece)
-                .mapToObj(i -> generateFor(board.getBoard().get(i)).from(board, i))
+                .mapToObj(i -> generateFor(board.getPiece(i)).from(board, i))
                 .flatMap(List::stream)
                 .toList();
     }
