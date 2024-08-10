@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Component
 public class CheckGenerator extends SlidingGenerator {
@@ -62,6 +63,16 @@ public class CheckGenerator extends SlidingGenerator {
         }
 
         return moves;
+    }
+
+    private static List<Move> generateKnightAttacks(Board board, int from) {
+        return IntStream.of(from - 17, from - 15, from - 10, from - 6, from + 6, from + 10, from + 15, from + 17)
+                .filter(Generator::isIndexInBounds)
+                .filter(to -> Generator.isPieceOnIndexNotFriendly(board, to))
+                .filter(to -> KnightGenerator.isValidKnightMove(from, to))
+                .filter(to -> board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT))
+                .mapToObj(to -> new Move(from, to))
+                .toList();
     }
 
 }

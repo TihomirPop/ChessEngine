@@ -20,11 +20,11 @@ class KnightGenerator extends Generator {
                 .toList();
     }
 
-    private boolean isValidKnightMove(int from, int to) {
-        int fromRow = from / 8;
-        int fromCol = from % 8;
-        int toRow = to / 8;
-        int toCol = to % 8;
+    public static boolean isValidKnightMove(int from, int to) {
+        int fromRow = Board.getRow(from);
+        int fromCol = Board.getColumn(from);
+        int toRow = Board.getRow(to);
+        int toCol = Board.getColumn(to);
 
         int rowDiff = Math.abs(fromRow - toRow);
         int colDiff = Math.abs(fromCol - toCol);
