@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 public class Generators {
 
     private final Map<Piece, Generator> pieceToGenerator;
+    private final CheckGenerator checkGenerator;
 
     private Generators(
             KingGenerator kingGenerator,
@@ -22,7 +23,8 @@ public class Generators {
             QueenGenerator queenGenerator,
             KnightGenerator knightGenerator,
             PawnGenerator pawnGenerator,
-            EmptyGenerator emptyGenerator
+            EmptyGenerator emptyGenerator,
+            CheckGenerator checkGenerator
     ) {
         pieceToGenerator = HashMap.newHashMap(13);
         pieceToGenerator.put(Piece.WHITE_KING, kingGenerator);
@@ -38,18 +40,27 @@ public class Generators {
         pieceToGenerator.put(Piece.BLACK_KNIGHT, knightGenerator);
         pieceToGenerator.put(Piece.BLACK_PAWN, pawnGenerator);
         pieceToGenerator.put(Piece.EMPTY, emptyGenerator);
+        this.checkGenerator = checkGenerator;
     }
 
     public Generator generateFor(Piece piece) {
         return pieceToGenerator.get(piece);
     }
 
-    public List<Move> generateAllMovesWithoutCheckValidation(Board board) {
+    public List<Move> generateAllMoves(Board board) {
         return IntStream.range(0, 64)
                 .filter(board::isCurrentPlayerPiece)
                 .mapToObj(i -> generateFor(board.getPiece(i)).from(board, i))
                 .flatMap(List::stream)
+                .filter(move -> {
+                    var newBoard = board.createCopy();
+                    newBoard.makeMove(move);
+                    newBoard.setWhiteTurn(!newBoard.isWhiteTurn());
+                    return checkGenerator.from(newBoard, newBoard.getKingIndex())
+                            .isEmpty();
+                })
                 .toList();
     }
+
 
 }

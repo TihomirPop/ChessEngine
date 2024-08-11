@@ -82,6 +82,10 @@ public class Board {
         return board.size();
     }
 
+    public int getKingIndex() {
+        return board.indexOf(isWhiteTurn ? Piece.WHITE_KING : Piece.BLACK_KING);
+    }
+
     private void initializeBoard() {
         addPieces(
                 Piece.BLACK_ROOK,

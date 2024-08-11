@@ -55,6 +55,8 @@ public class CheckGenerator extends SlidingGenerator {
                     (directionType == Direction.Type.DIAGONAL && isBishopOrQueen)) {
                 moves.add(new Move(from, to));
                 break;
+            } else if(!Generator.isPieceOnIndexEmpty(board, to)) {
+                break;
             }
         }
 

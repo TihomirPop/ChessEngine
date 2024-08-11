@@ -14,10 +14,9 @@ public class Perft {
     private final Generators generators;
 
     public void runPerft(Board board, int depth) {
-        //TODO: switch to generateAllMoves with check validation
         log.info("Perft of depth {} for board:\n{}", depth, board);
         var from = System.currentTimeMillis();
-        var totalNodes = generators.generateAllMovesWithoutCheckValidation(board)
+        var totalNodes = generators.generateAllMoves(board)
                 .stream()
                 .parallel()
                 .mapToLong(move -> {
@@ -40,7 +39,7 @@ public class Perft {
         }
 
         var nodes = 0L;
-        var moves = generators.generateAllMovesWithoutCheckValidation(board);
+        var moves = generators.generateAllMoves(board);
 
         for (var move : moves) {
             var newBoard = board.createCopy();
