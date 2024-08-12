@@ -36,6 +36,33 @@ abstract class SlidingGenerator extends Generator {
         return moves;
     }
 
+    protected static List<Move> generateSlidingMoves(Board board, int from, Direction direction, Move.Type moveType) {
+        var offset = direction.getOffset();
+        var directionType = direction.getType();
+        var to = from;
+        List<Move> moves = new ArrayList<>();
+
+        while (true) {
+            to += offset;
+
+            if (!Generator.isIndexInBounds(to) ||
+                    (directionType == Direction.Type.HORIZONTAL && wentToNewRow(from, to)) ||
+                    (directionType == Direction.Type.DIAGONAL && didNotGoDiagonally(from, to)) ||
+                    Generator.isPieceOnIndexFriendly(board, to)) {
+                break;
+            }
+
+            if (Generator.isPieceOnIndexOpponent(board, to)) {
+                moves.add(new Move(from, to, moveType));
+                break;
+            }
+
+            moves.add(new Move(from, to, moveType));
+        }
+
+        return moves;
+    }
+
     protected static boolean wentToNewRow(int from, int to) {
         return Board.getRow(from) != Board.getRow(to);
     }

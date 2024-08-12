@@ -65,7 +65,21 @@ public class Board {
     }
 
     public void makeMove(Move move) {
-        board.set(move.to(), board.get(move.from()));
+        if(enPassantSquare != -1) {
+            enPassantSquare = -1;
+        }
+
+        switch (move.type()) {
+            case CASTLING -> makeCastlingMove(move);
+            case DOUBLE_PAWN_PUSH -> makeDoublePawnPush(move);
+            case EN_PASSANT -> makeEnPassantMove(move);
+            case QUEEN_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN);
+            case ROOK_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK);
+            case BISHOP_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP);
+            case KNIGHT_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT);
+            case FIRST_MOVE -> makeFirstMove(move);
+            default -> makeRegularMove(move);
+        }
         board.set(move.from(), Piece.EMPTY);
         setWhiteTurn(!isWhiteTurn);
     }
@@ -84,6 +98,20 @@ public class Board {
 
     public int getKingIndex() {
         return board.indexOf(isWhiteTurn ? Piece.WHITE_KING : Piece.BLACK_KING);
+    }
+
+    @Override
+    public String toString() {
+        var sb = new StringBuilder();
+        for (var i = 0; i < 64; i++) {
+            sb.append(board.get(i)
+                            .toFen())
+                    .append(" ");
+            if (i % 8 == 7) {
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     private void initializeBoard() {
@@ -128,16 +156,85 @@ public class Board {
         }
     }
 
-    @Override
-    public String toString() {
-        var sb = new StringBuilder();
-        for (var i = 0; i < 64; i++) {
-            sb.append(board.get(i).toFen()).append(" ");
-            if (i % 8 == 7) {
-                sb.append("\n");
+    private void makeRegularMove(Move move) {
+        board.set(move.to(), board.get(move.from()));
+    }
+
+    private void makePromotionMove(Move move, Piece piece) {
+        board.set(move.to(), piece);
+    }
+
+    private void makeEnPassantMove(Move move) {
+        var captureIndex = isWhiteTurn ?
+                move.to() + Direction.DOWN.getOffset() :
+                move.to() + Direction.UP.getOffset();
+        makeRegularMove(move);
+        board.set(captureIndex , Piece.EMPTY);
+    }
+
+    private void makeDoublePawnPush(Move move) {
+        makeRegularMove(move);
+        enPassantSquare = isWhiteTurn ?
+                move.from() + Direction.UP.getOffset() :
+                move.from() + Direction.DOWN.getOffset();
+    }
+
+    private void makeCastlingMove(Move move) {
+        makeRegularMove(move);
+        switch (move.to()) {
+            case 2 -> {
+                board.set(3, Piece.BLACK_ROOK);
+                board.set(0, Piece.EMPTY);
+                isBlackKingSideCastle = false;
+                isBlackQueenSideCastle = false;
+            }
+            case 6 -> {
+                board.set(5, Piece.BLACK_ROOK);
+                board.set(7, Piece.EMPTY);
+                isBlackKingSideCastle = false;
+                isBlackQueenSideCastle = false;
+            }
+            case 58 -> {
+                board.set(59, Piece.WHITE_ROOK);
+                board.set(56, Piece.EMPTY);
+                isWhiteKingSideCastle = false;
+                isWhiteQueenSideCastle = false;
+            }
+            case 62 -> {
+                board.set(61, Piece.WHITE_ROOK);
+                board.set(63, Piece.EMPTY);
+                isWhiteKingSideCastle = false;
+                isWhiteQueenSideCastle = false;
             }
         }
-        return sb.toString();
+    }
+
+    private void makeFirstMove(Move move) {
+        makeRegularMove(move);
+        switch (board.get(move.from())) {
+            case WHITE_KING -> {
+                isWhiteKingSideCastle = false;
+                isWhiteQueenSideCastle = false;
+            }
+            case BLACK_KING -> {
+                isBlackKingSideCastle = false;
+                isBlackQueenSideCastle = false;
+            }
+            case WHITE_ROOK -> {
+                if (move.from() == 56) {
+                    isWhiteQueenSideCastle = false;
+                } else if (move.from() == 63) {
+                    isWhiteKingSideCastle = false;
+                }
+            }
+            case BLACK_ROOK -> {
+                if (move.from() == 0) {
+                    isBlackQueenSideCastle = false;
+                } else if (move.from() == 7) {
+                    isBlackKingSideCastle = false;
+                }
+            }
+        }
     }
 
 }

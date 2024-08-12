@@ -18,10 +18,10 @@ class PawnGenerator extends Generator {
         var to = from + direction;
 
         if (isPieceOnIndexEmpty(board, to) && isIndexInBounds(to)) {
-            moves.add(new Move(from, to));
+            generateMoveWithPromotionCheck(moves, from, to);
             var doubleMove = to + direction;
             if (isOnStartingRow(board, from) && isPieceOnIndexEmpty(board, doubleMove)) {
-                moves.add(new Move(from, doubleMove));
+                moves.add(new Move(from, doubleMove, Move.Type.DOUBLE_PAWN_PUSH));
             }
         }
 
@@ -29,19 +29,33 @@ class PawnGenerator extends Generator {
         var rightCapture = to + Direction.RIGHT.getOffset();
 
         if (Board.getColumn(from) != 1 && isPieceOnIndexOpponent(board, leftCapture)) {
-            moves.add(new Move(from, leftCapture));
+            generateMoveWithPromotionCheck(moves, from, leftCapture);
         }
 
         if (Board.getColumn(from) != 8 && isPieceOnIndexOpponent(board, rightCapture)) {
-            moves.add(new Move(from, rightCapture));
+            generateMoveWithPromotionCheck(moves, from, rightCapture);
         }
 
         var enPassantSquare = board.getEnPassantSquare();
-        if (enPassantSquare != -1 && (enPassantSquare == leftCapture || enPassantSquare == rightCapture)) {
-            moves.add(new Move(from, enPassantSquare));
+        if (enPassantSquare != -1) {
+            if ((Board.getColumn(from) != 1 && enPassantSquare == leftCapture) ||
+                    (Board.getColumn(from) != 8 && enPassantSquare == rightCapture)) {
+                moves.add(new Move(from, enPassantSquare, Move.Type.EN_PASSANT));
+            }
         }
 
         return moves;
+    }
+
+    private static void generateMoveWithPromotionCheck(List<Move> moves, int from, int to) {
+        if (Board.getRow(to) == 8 || Board.getRow(to) == 1) {
+            moves.add(new Move(from, to, Move.Type.QUEEN_PROMOTION));
+            moves.add(new Move(from, to, Move.Type.ROOK_PROMOTION));
+            moves.add(new Move(from, to, Move.Type.BISHOP_PROMOTION));
+            moves.add(new Move(from, to, Move.Type.KNIGHT_PROMOTION));
+        } else {
+            moves.add(new Move(from, to));
+        }
     }
 
     private boolean isOnStartingRow(Board board, int from) {

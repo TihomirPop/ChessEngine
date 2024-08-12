@@ -35,19 +35,23 @@ class KingGenerator extends Generator {
         var queenSidePos1 = kingStartPos + leftOffset;
         var queenSidePos2 = queenSidePos1 + leftOffset;
         var queenSidePos3 = queenSidePos2 + leftOffset;
+        var kingSideRookPos = isWhiteTurn ? 63 : 7;
+        var queenSideRookPos = isWhiteTurn ? 56 : 0;
 
         if ((isWhiteTurn && board.isWhiteKingSideCastle()) || (!isWhiteTurn && board.isBlackKingSideCastle())) {
-            if (board.getPiece(kingSidePos1) == Piece.EMPTY && board.getPiece(kingSidePos2) == Piece.EMPTY) {
+            if (board.getPiece(kingSidePos1) == Piece.EMPTY && board.getPiece(kingSidePos2) == Piece.EMPTY &&
+                    board.getPiece(kingSideRookPos) == (isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK)) {
                 if (checkGenerator.from(board, kingStartPos).isEmpty() && checkGenerator.from(board, kingSidePos1).isEmpty()) {
-                    moves.add(new Move(from, kingSidePos2));
+                    moves.add(new Move(from, kingSidePos2, Move.Type.CASTLING));
                 }
             }
         }
 
         if ((isWhiteTurn && board.isWhiteQueenSideCastle()) || (!isWhiteTurn && board.isBlackQueenSideCastle())) {
-            if (board.getPiece(queenSidePos1) == Piece.EMPTY && board.getPiece(queenSidePos2) == Piece.EMPTY && board.getPiece(queenSidePos3) == Piece.EMPTY) {
+            if (board.getPiece(queenSidePos1) == Piece.EMPTY && board.getPiece(queenSidePos2) == Piece.EMPTY && board.getPiece(queenSidePos3) == Piece.EMPTY &&
+                    board.getPiece(queenSideRookPos) == (isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK)) {
                 if (checkGenerator.from(board, kingStartPos).isEmpty() && checkGenerator.from(board, queenSidePos1).isEmpty()) {
-                    moves.add(new Move(from, queenSidePos2));
+                    moves.add(new Move(from, queenSidePos2, Move.Type.CASTLING));
                 }
             }
         }
@@ -56,13 +60,17 @@ class KingGenerator extends Generator {
     }
 
     private static List<Move> generateDirectionMoves(Board board, int from) {
+        var isFirstMove = board.isWhiteTurn() ?
+                board.isWhiteQueenSideCastle() || board.isWhiteKingSideCastle() :
+                board.isBlackQueenSideCastle() || board.isBlackKingSideCastle();
+
         return Arrays.stream(Direction.values())
                 .map(direction -> from + direction.getOffset())
                 .filter(Generator::isIndexInBounds)
                 .filter(to -> Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1)
                 .filter(to -> Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1)
                 .filter(to -> Generator.isPieceOnIndexNotFriendly(board, to))
-                .map(to -> new Move(from, to))
+                .map(to -> isFirstMove ? new Move(from, to, Move.Type.FIRST_MOVE) : new Move(from, to))
                 .toList();
     }
 
