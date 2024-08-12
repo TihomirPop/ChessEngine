@@ -19,7 +19,8 @@ public enum Piece {
     BLACK_KNIGHT,
     BLACK_PAWN;
 
-    private static final Map<Piece, Character> FEN_MAP = new HashMap<>();
+    private static final Map<Piece, Character> PIECE_TO_FEN = new HashMap<>();
+    private static final Map<Character, Piece> FEN_TO_PIECE = new HashMap<>();
     public static final Set<Piece> WHITE_PIECES = Set.of(
             WHITE_KING,
             WHITE_ROOK,
@@ -38,22 +39,27 @@ public enum Piece {
     );
 
     static {
-        FEN_MAP.put(WHITE_KING, 'K');
-        FEN_MAP.put(WHITE_ROOK, 'R');
-        FEN_MAP.put(WHITE_BISHOP, 'B');
-        FEN_MAP.put(WHITE_QUEEN, 'Q');
-        FEN_MAP.put(WHITE_KNIGHT, 'N');
-        FEN_MAP.put(WHITE_PAWN, 'P');
-        FEN_MAP.put(BLACK_KING, 'k');
-        FEN_MAP.put(BLACK_ROOK, 'r');
-        FEN_MAP.put(BLACK_BISHOP, 'b');
-        FEN_MAP.put(BLACK_QUEEN, 'q');
-        FEN_MAP.put(BLACK_KNIGHT, 'n');
-        FEN_MAP.put(BLACK_PAWN, 'p');
-        FEN_MAP.put(EMPTY, '_');
+        PIECE_TO_FEN.put(WHITE_KING, 'K');
+        PIECE_TO_FEN.put(WHITE_ROOK, 'R');
+        PIECE_TO_FEN.put(WHITE_BISHOP, 'B');
+        PIECE_TO_FEN.put(WHITE_QUEEN, 'Q');
+        PIECE_TO_FEN.put(WHITE_KNIGHT, 'N');
+        PIECE_TO_FEN.put(WHITE_PAWN, 'P');
+        PIECE_TO_FEN.put(BLACK_KING, 'k');
+        PIECE_TO_FEN.put(BLACK_ROOK, 'r');
+        PIECE_TO_FEN.put(BLACK_BISHOP, 'b');
+        PIECE_TO_FEN.put(BLACK_QUEEN, 'q');
+        PIECE_TO_FEN.put(BLACK_KNIGHT, 'n');
+        PIECE_TO_FEN.put(BLACK_PAWN, 'p');
+        PIECE_TO_FEN.put(EMPTY, '_');
+        PIECE_TO_FEN.forEach((piece, c) -> FEN_TO_PIECE.put(c, piece));
     }
 
     public Character toFen() {
-        return FEN_MAP.get(this);
+        return PIECE_TO_FEN.get(this);
+    }
+
+    public static Piece fromFen(Character c) {
+        return FEN_TO_PIECE.get(c);
     }
 }

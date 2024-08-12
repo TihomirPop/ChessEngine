@@ -18,6 +18,24 @@ public class FenMapper {
         return fenBuilder.toString();
     }
 
+    public static Board fromFen(String fen) {
+        String[] parts = fen.split(" ");
+        if (parts.length != 6) {
+            throw new IllegalArgumentException("Invalid FEN string: " + fen);
+        }
+
+        Board board = Board.createEmptyBoard();
+
+        parsePieces(parts[0], board);
+        parseActiveColor(parts[1], board);
+        parseCastlingRights(parts[2], board);
+        parseEnPassantTarget(parts[3], board);
+        board.setHalfMoveClock(Integer.parseInt(parts[4]));
+        board.setFullMoveNumber(Integer.parseInt(parts[5]));
+
+        return board;
+    }
+
     private static void piecesToFen(Board board, StringBuilder fenBuilder) {
         var emptySpaces = 0;
 
@@ -87,4 +105,36 @@ public class FenMapper {
         fenBuilder.append(board.getFullMoveNumber());
     }
 
+    private static void parsePieces(String pieces, Board board) {
+        int squareIndex = 0;
+        for (char c : pieces.toCharArray()) {
+            if (c == '/') {
+                continue;
+            } else if (Character.isDigit(c)) {
+                squareIndex += c - '0';
+            } else {
+                board.setPiece(squareIndex, Piece.fromFen(c));
+                squareIndex++;
+            }
+        }
+    }
+
+    private static void parseActiveColor(String activeColor, Board board) {
+        board.setWhiteTurn(activeColor.equals("w"));
+    }
+
+    private static void parseCastlingRights(String castling, Board board) {
+        board.setWhiteKingSideCastle(castling.contains("K"));
+        board.setWhiteQueenSideCastle(castling.contains("Q"));
+        board.setBlackKingSideCastle(castling.contains("k"));
+        board.setBlackQueenSideCastle(castling.contains("q"));
+    }
+
+    private static void parseEnPassantTarget(String enPassant, Board board) {
+        if (enPassant.equals("-")) {
+            board.setEnPassantSquare(-1);
+        } else {
+            board.setEnPassantSquare(AlgebraicNotationMapper.fromAlgebraicNotation(enPassant));
+        }
+    }
 }
