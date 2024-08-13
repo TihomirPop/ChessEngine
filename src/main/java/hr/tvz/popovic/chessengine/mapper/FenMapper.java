@@ -113,7 +113,13 @@ public class FenMapper {
             } else if (Character.isDigit(c)) {
                 squareIndex += c - '0';
             } else {
-                board.setPiece(squareIndex, Piece.fromFen(c));
+                Piece piece = Piece.fromFen(c);
+                board.setPiece(squareIndex, piece);
+                if(piece == Piece.WHITE_KING) {
+                    board.setWhiteKingIndex(squareIndex);
+                } else if(piece == Piece.BLACK_KING) {
+                    board.setBlackKingIndex(squareIndex);
+                }
                 squareIndex++;
             }
         }

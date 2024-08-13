@@ -21,6 +21,8 @@ public class Board {
     private int enPassantSquare = -1;
     private int halfMoveClock = 0;
     private int fullMoveNumber = 1;
+    private int whiteKingIndex;
+    private int blackKingIndex;
 
     public static Board createInitialBoard() {
         Board board = new Board();
@@ -39,6 +41,8 @@ public class Board {
         copy.enPassantSquare = enPassantSquare;
         copy.halfMoveClock = halfMoveClock;
         copy.fullMoveNumber = fullMoveNumber;
+        copy.whiteKingIndex = whiteKingIndex;
+        copy.blackKingIndex = blackKingIndex;
         return copy;
     }
 
@@ -81,6 +85,11 @@ public class Board {
             default -> makeRegularMove(move);
         }
         board.set(move.from(), Piece.EMPTY);
+        if (board.get(move.to()) == Piece.WHITE_KING) {
+            whiteKingIndex = move.to();
+        } else if (board.get(move.to()) == Piece.BLACK_KING) {
+            blackKingIndex = move.to();
+        }
         setWhiteTurn(!isWhiteTurn);
     }
 
@@ -97,7 +106,7 @@ public class Board {
     }
 
     public int getKingIndex() {
-        return board.indexOf(isWhiteTurn ? Piece.WHITE_KING : Piece.BLACK_KING);
+        return isWhiteTurn ? whiteKingIndex : blackKingIndex;
     }
 
     @Override
@@ -138,6 +147,8 @@ public class Board {
                 Piece.WHITE_KNIGHT,
                 Piece.WHITE_ROOK
         );
+        whiteKingIndex = 60;
+        blackKingIndex = 4;
     }
 
     private void addPieces(Piece... pieces) {
