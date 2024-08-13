@@ -5,10 +5,10 @@ import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 @Component
 public class Generators {
@@ -23,7 +23,6 @@ public class Generators {
             QueenGenerator queenGenerator,
             KnightGenerator knightGenerator,
             PawnGenerator pawnGenerator,
-            EmptyGenerator emptyGenerator,
             CheckGenerator checkGenerator
     ) {
         pieceToGenerator = HashMap.newHashMap(13);
@@ -39,7 +38,6 @@ public class Generators {
         pieceToGenerator.put(Piece.BLACK_QUEEN, queenGenerator);
         pieceToGenerator.put(Piece.BLACK_KNIGHT, knightGenerator);
         pieceToGenerator.put(Piece.BLACK_PAWN, pawnGenerator);
-        pieceToGenerator.put(Piece.EMPTY, emptyGenerator);
         this.checkGenerator = checkGenerator;
     }
 
@@ -48,18 +46,28 @@ public class Generators {
     }
 
     public List<Move> generateAllMoves(Board board) {
-        return IntStream.range(0, 64)
-                .filter(board::isCurrentPlayerPiece)
-                .mapToObj(i -> generateFor(board.getPiece(i)).from(board, i))
-                .flatMap(List::stream)
-                .filter(move -> {
+        List<Move> list = new ArrayList<>();
+        Piece piece;
+        var playerPieces = board.isWhiteTurn() ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
+        for (int i = 0; i < 64; i++) {
+            piece = board.getPiece(i);
+            if(piece == Piece.EMPTY) {
+                continue;
+            }
+            if (playerPieces.contains(piece)) {
+                List<Move> from = generateFor(piece).from(board, i);
+                for (Move move1 : from) {
                     var newBoard = board.createCopy();
-                    newBoard.makeMove(move);
+                    newBoard.makeMove(move1);
                     newBoard.setWhiteTurn(!newBoard.isWhiteTurn());
-                    return checkGenerator.from(newBoard, newBoard.getKingIndex())
-                            .isEmpty();
-                })
-                .toList();
+                    if (checkGenerator.from(newBoard, newBoard.getKingIndex())
+                            .isEmpty()) {
+                        list.add(move1);
+                    }
+                }
+            }
+        }
+        return list;
     }
 
 

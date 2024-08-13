@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -64,14 +63,15 @@ class KingGenerator extends Generator {
                 board.isWhiteQueenSideCastle() || board.isWhiteKingSideCastle() :
                 board.isBlackQueenSideCastle() || board.isBlackKingSideCastle();
 
-        return Arrays.stream(Direction.values())
-                .map(direction -> from + direction.getOffset())
-                .filter(Generator::isIndexInBounds)
-                .filter(to -> Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1)
-                .filter(to -> Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1)
-                .filter(to -> Generator.isPieceOnIndexNotFriendly(board, to))
-                .map(to -> isFirstMove ? new Move(from, to, Move.Type.FIRST_MOVE) : new Move(from, to))
-                .toList();
+        List<Move> list = new ArrayList<>();
+        for (Direction direction : Direction.values()) {
+            int to = from + direction.getOffset();
+            if (Generator.isIndexInBounds(to) && (Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1) && (Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1) && Generator.isPieceOnIndexNotFriendly(board, to)) {
+                Move move = isFirstMove ? new Move(from, to, Move.Type.FIRST_MOVE) : new Move(from, to);
+                list.add(move);
+            }
+        }
+        return list;
     }
 
 }

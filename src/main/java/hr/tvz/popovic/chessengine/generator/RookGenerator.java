@@ -5,14 +5,16 @@ import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Component
 class RookGenerator extends SlidingGenerator {
 
     @Override
     public List<Move> from(Board board, int from) {
+        List<Move> list = new ArrayList<>();
+
         var moveType = switch (from) {
             case 0 -> board.isBlackQueenSideCastle() ? Move.Type.FIRST_MOVE : Move.Type.NORMAL;
             case 7 -> board.isBlackKingSideCastle() ? Move.Type.FIRST_MOVE : Move.Type.NORMAL;
@@ -21,10 +23,12 @@ class RookGenerator extends SlidingGenerator {
             default -> Move.Type.NORMAL;
         };
 
-        return Stream.of(Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT)
-                .map(direction -> generateSlidingMoves(board, from, direction, moveType))
-                .flatMap(List::stream)
-                .toList();
+        list.addAll(generateSlidingMoves(board, from, Direction.UP, moveType));
+        list.addAll(generateSlidingMoves(board, from, Direction.DOWN, moveType));
+        list.addAll(generateSlidingMoves(board, from, Direction.LEFT, moveType));
+        list.addAll(generateSlidingMoves(board, from, Direction.RIGHT, moveType));
+
+        return list;
     }
 
 }

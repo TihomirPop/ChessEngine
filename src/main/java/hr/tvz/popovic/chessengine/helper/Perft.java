@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ExecutionException;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -17,18 +19,16 @@ public class Perft {
         log.info("Perft of depth {} for board:\n{}", depth, board);
         var from = System.currentTimeMillis();
         var totalNodes = generators.generateAllMoves(board)
-                .stream()
-                .parallel()
-                .mapToLong(move -> {
-                    var newBoard = board.createCopy();
-                    newBoard.makeMove(move);
-                    var nodes = perft(newBoard, depth - 1);
-                    log.info("{}: {}", move, nodes);
-                    return nodes;
-                })
-                .sum();
-
-        log.info("Total Nodes: {}", totalNodes);
+                        .parallelStream()
+                        .mapToLong(move -> {
+                            var newBoard = board.createCopy();
+                            newBoard.makeMove(move);
+                            var nodes = perft(newBoard, depth - 1);
+                            log.info("{}: {}", move, nodes);
+                            return nodes;
+                        })
+                        .sum();
+log.info("Total Nodes: {}", totalNodes);
         log.info("Time: {}ms", System.currentTimeMillis() - from);
     }
 
