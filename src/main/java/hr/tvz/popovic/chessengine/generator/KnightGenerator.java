@@ -4,15 +4,15 @@ import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Move;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 class KnightGenerator extends Generator {
 
     @Override
-    public List<Move> from(Board board, int from) {
-        List<Move> list = new ArrayList<>();
+    public Set<Move> from(Board board, int from) {
+        Set<Move> list = new HashSet<>();
         for (int to : new int[]{from - 17, from - 15, from - 10, from - 6, from + 6, from + 10, from + 15, from + 17}) {
             if (Generator.isIndexInBounds(to) && Generator.isPieceOnIndexNotFriendly(board, to) && isValidKnightMove(from, to)) {
                 list.add(new Move(from, to));

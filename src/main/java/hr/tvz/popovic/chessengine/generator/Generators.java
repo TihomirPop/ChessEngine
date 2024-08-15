@@ -5,10 +5,10 @@ import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class Generators {
@@ -45,8 +45,8 @@ public class Generators {
         return pieceToGenerator.get(piece);
     }
 
-    public List<Move> generateAllMoves(Board board) {
-        List<Move> list = new ArrayList<>();
+    public Set<Move> generateAllMoves(Board board) {
+        Set<Move> list = new HashSet<>();
         Piece piece;
         var playerPieces = board.isWhiteTurn() ? Piece.WHITE_PIECES : Piece.BLACK_PIECES;
         for (int i = 0; i < 64; i++) {
@@ -55,7 +55,7 @@ public class Generators {
                 continue;
             }
             if (playerPieces.contains(piece)) {
-                List<Move> from = generateFor(piece).from(board, i);
+                Set<Move> from = generateFor(piece).from(board, i);
                 for (Move move1 : from) {
                     var newBoard = board.createCopy();
                     newBoard.makeMove(move1);

@@ -4,16 +4,16 @@ import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 abstract class SlidingGenerator extends Generator {
 
-    protected static List<Move> generateSlidingMoves(Board board, int from, Direction direction) {
+    protected static Set<Move> generateSlidingMoves(Board board, int from, Direction direction) {
         var offset = direction.getOffset();
         var directionType = direction.getType();
         var to = from;
-        List<Move> moves = new ArrayList<>();
+        Set<Move> moves = new HashSet<>();
 
         while (true) {
             to += offset;
@@ -36,11 +36,11 @@ abstract class SlidingGenerator extends Generator {
         return moves;
     }
 
-    protected static List<Move> generateSlidingMoves(Board board, int from, Direction direction, Move.Type moveType) {
+    protected static Set<Move> generateSlidingMoves(Board board, int from, Direction direction, Move.Type moveType) {
         var offset = direction.getOffset();
         var directionType = direction.getType();
         var to = from;
-        List<Move> moves = new ArrayList<>();
+        Set<Move> moves = new HashSet<>();
 
         while (true) {
             to += offset;

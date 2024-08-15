@@ -6,14 +6,14 @@ import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class CheckGenerator extends SlidingGenerator {
 
     @Override
-    public List<Move> from(Board board, int from) {
+    public Set<Move> from(Board board, int from) {
         var moves = generatePawnAttacks(board, from);
         moves.addAll(generateKnightAttacks(board, from));
         moves.addAll(generateKingAttacks(board, from));
@@ -22,8 +22,8 @@ public class CheckGenerator extends SlidingGenerator {
         return moves;
     }
 
-    private static List<Move> generateAllSlidingAttacks(Board board, int from) {
-        List<Move> list = new ArrayList<>();
+    private static Set<Move> generateAllSlidingAttacks(Board board, int from) {
+        Set<Move> list = new HashSet<>();
 
         list.addAll(generateSlidingAttacks(board, from, Direction.UP));
         list.addAll(generateSlidingAttacks(board, from, Direction.DOWN));
@@ -37,11 +37,11 @@ public class CheckGenerator extends SlidingGenerator {
         return list;
     }
 
-    private static List<Move> generateSlidingAttacks(Board board, int from, Direction direction) {
+    private static Set<Move> generateSlidingAttacks(Board board, int from, Direction direction) {
         var offset = direction.getOffset();
         var directionType = direction.getType();
         var to = from;
-        List<Move> moves = new ArrayList<>();
+        Set<Move> moves = new HashSet<>();
 
         while (true) {
             to += offset;
@@ -69,12 +69,12 @@ public class CheckGenerator extends SlidingGenerator {
         return moves;
     }
 
-    private static List<Move> generatePawnAttacks(Board board, int from) {
+    private static Set<Move> generatePawnAttacks(Board board, int from) {
         var direction = board.isWhiteTurn() ? Direction.UP.getOffset() : Direction.DOWN.getOffset();
         var opponent = board.isWhiteTurn() ? Piece.BLACK_PAWN : Piece.WHITE_PAWN;
         var leftAttack = from + direction + Direction.LEFT.getOffset();
         var rightAttack = from + direction + Direction.RIGHT.getOffset();
-        List<Move> moves = new ArrayList<>();
+        Set<Move> moves = new HashSet<>();
 
         if (Generator.isIndexInBounds(leftAttack) && Board.getColumn(from) != 1 && board.getPiece(leftAttack) == opponent) {
             moves.add(new Move(from, leftAttack));
@@ -86,8 +86,8 @@ public class CheckGenerator extends SlidingGenerator {
         return moves;
     }
 
-    private static List<Move> generateKnightAttacks(Board board, int from) {
-        List<Move> list = new ArrayList<>();
+    private static Set<Move> generateKnightAttacks(Board board, int from) {
+        Set<Move> list = new HashSet<>();
         for (int to : new int[]{from - 17, from - 15, from - 10, from - 6, from + 6, from + 10, from + 15, from + 17}) {
             if (Generator.isIndexInBounds(to) && Generator.isPieceOnIndexNotFriendly(board, to) && KnightGenerator.isValidKnightMove(from, to) && (board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT))) {
                 list.add(new Move(from, to));
@@ -96,8 +96,8 @@ public class CheckGenerator extends SlidingGenerator {
         return list;
     }
 
-    private static List<Move> generateKingAttacks(Board board, int from) {
-        List<Move> list = new ArrayList<>();
+    private static Set<Move> generateKingAttacks(Board board, int from) {
+        Set<Move> list = new HashSet<>();
         for (Direction direction : Direction.values()) {
             int to = from + direction.getOffset();
             if (Generator.isIndexInBounds(to) && (Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1) && (Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1) && (board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KING : Piece.WHITE_KING))) {

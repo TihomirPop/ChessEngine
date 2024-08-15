@@ -5,15 +5,15 @@ import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 class PawnGenerator extends Generator {
 
     @Override
-    public List<Move> from(Board board, int from) {
-        List<Move> moves = new ArrayList<>();
+    public Set<Move> from(Board board, int from) {
+        Set<Move> moves = new HashSet<>();
         var direction = board.isWhiteTurn() ? Direction.UP.getOffset() : Direction.DOWN.getOffset();
         var to = from + direction;
 
@@ -47,7 +47,7 @@ class PawnGenerator extends Generator {
         return moves;
     }
 
-    private static void generateMoveWithPromotionCheck(List<Move> moves, int from, int to) {
+    private static void generateMoveWithPromotionCheck(Set<Move> moves, int from, int to) {
         if (Board.getRow(to) == 8 || Board.getRow(to) == 1) {
             moves.add(new Move(from, to, Move.Type.QUEEN_PROMOTION));
             moves.add(new Move(from, to, Move.Type.ROOK_PROMOTION));

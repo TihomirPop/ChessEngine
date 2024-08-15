@@ -7,8 +7,8 @@ import hr.tvz.popovic.chessengine.model.Piece;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -16,15 +16,15 @@ class KingGenerator extends Generator {
     private final CheckGenerator checkGenerator;
 
     @Override
-    public List<Move> from(Board board, int from) {
+    public Set<Move> from(Board board, int from) {
         var moves = generateCastlingMoves(board, from);
         moves.addAll(generateDirectionMoves(board, from));
 
         return moves;
     }
 
-    private List<Move> generateCastlingMoves(Board board, int from) {
-        List<Move> moves = new ArrayList<>();
+    private Set<Move> generateCastlingMoves(Board board, int from) {
+        Set<Move> moves = new HashSet<>();
         var isWhiteTurn = board.isWhiteTurn();
         var kingStartPos = isWhiteTurn ? 60 : 4;
         var rightOffset = Direction.RIGHT.getOffset();
@@ -58,12 +58,12 @@ class KingGenerator extends Generator {
         return moves;
     }
 
-    private static List<Move> generateDirectionMoves(Board board, int from) {
+    private static Set<Move> generateDirectionMoves(Board board, int from) {
         var isFirstMove = board.isWhiteTurn() ?
                 board.isWhiteQueenSideCastle() || board.isWhiteKingSideCastle() :
                 board.isBlackQueenSideCastle() || board.isBlackKingSideCastle();
 
-        List<Move> list = new ArrayList<>();
+        Set<Move> list = new HashSet<>();
         for (Direction direction : Direction.values()) {
             int to = from + direction.getOffset();
             if (Generator.isIndexInBounds(to) && (Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1) && (Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1) && Generator.isPieceOnIndexNotFriendly(board, to)) {

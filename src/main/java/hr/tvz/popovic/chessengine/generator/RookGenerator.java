@@ -5,15 +5,15 @@ import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 class RookGenerator extends SlidingGenerator {
 
     @Override
-    public List<Move> from(Board board, int from) {
-        List<Move> list = new ArrayList<>();
+    public Set<Move> from(Board board, int from) {
+        Set<Move> list = new HashSet<>();
 
         var moveType = switch (from) {
             case 0 -> board.isBlackQueenSideCastle() ? Move.Type.FIRST_MOVE : Move.Type.NORMAL;
