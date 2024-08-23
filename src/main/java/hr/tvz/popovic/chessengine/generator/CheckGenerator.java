@@ -4,16 +4,16 @@ import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CheckGenerator extends SlidingGenerator {
 
-    @Override
-    public List<Move> from(Board board, int from) {
+    public static List<Move> from(Board board, int from) {
         var moves = generatePawnAttacks(board, from);
         moves.addAll(generateKnightAttacks(board, from));
         moves.addAll(generateKingAttacks(board, from));

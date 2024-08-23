@@ -1,24 +1,30 @@
 package hr.tvz.popovic.chessengine.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+@Getter
+@RequiredArgsConstructor
 public enum Piece {
-    EMPTY,
-    WHITE_KING,
-    WHITE_ROOK,
-    WHITE_BISHOP,
-    WHITE_QUEEN,
-    WHITE_KNIGHT,
-    WHITE_PAWN,
-    BLACK_KING,
-    BLACK_ROOK,
-    BLACK_BISHOP,
-    BLACK_QUEEN,
-    BLACK_KNIGHT,
-    BLACK_PAWN;
+    EMPTY(0),
+    WHITE_KING(10000),
+    WHITE_ROOK(525),
+    WHITE_BISHOP(350),
+    WHITE_QUEEN(1000),
+    WHITE_KNIGHT(350),
+    WHITE_PAWN(100),
+    BLACK_KING(-10000),
+    BLACK_ROOK(-525),
+    BLACK_BISHOP(-350),
+    BLACK_QUEEN(-1000),
+    BLACK_KNIGHT(-350),
+    BLACK_PAWN(-100);
 
+    private final int value;
     private static final Map<Piece, Character> PIECE_TO_FEN = new HashMap<>();
     private static final Map<Character, Piece> FEN_TO_PIECE = new HashMap<>();
     public static final Set<Piece> WHITE_PIECES = Set.of(
@@ -61,5 +67,19 @@ public enum Piece {
 
     public static Piece fromFen(Character c) {
         return FEN_TO_PIECE.get(c);
+    }
+
+    public static boolean isWhitePiece(Piece piece) {
+        return switch (piece) {
+            case WHITE_KING, WHITE_ROOK, WHITE_BISHOP, WHITE_QUEEN, WHITE_KNIGHT, WHITE_PAWN -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isBlackPiece(Piece piece) {
+        return switch (piece) {
+            case BLACK_KING, BLACK_ROOK, BLACK_BISHOP, BLACK_QUEEN, BLACK_KNIGHT, BLACK_PAWN -> true;
+            default -> false;
+        };
     }
 }

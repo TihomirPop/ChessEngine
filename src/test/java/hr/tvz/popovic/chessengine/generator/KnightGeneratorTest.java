@@ -12,8 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class KnightGeneratorTest {
 
-    Generator knightGenerator = new KnightGenerator();
-
     @Test
     void shouldReturnValidKnightMoves() {
         var board = Board.createEmptyBoard();
@@ -22,7 +20,7 @@ class KnightGeneratorTest {
         board.setPiece(11, Piece.WHITE_PAWN);
         board.setPiece(16, Piece.BLACK_PAWN);
 
-        var moves = knightGenerator.from(board, 1);
+        var moves = KnightGenerator.from(board, 1);
 
         assertThat(moves).hasSize(2)
                 .containsExactlyInAnyOrderElementsOf(List.of(new Move(1, 16), new Move(1, 18)));

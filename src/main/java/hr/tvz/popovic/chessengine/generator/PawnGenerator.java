@@ -3,16 +3,16 @@ package hr.tvz.popovic.chessengine.generator;
 import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class PawnGenerator extends Generator {
 
-    @Override
-    public List<Move> from(Board board, int from) {
+    public static List<Move> from(Board board, int from) {
         List<Move> moves = new ArrayList<>();
         var direction = board.isWhiteTurn() ? Direction.UP.getOffset() : Direction.DOWN.getOffset();
         var to = from + direction;
@@ -58,7 +58,7 @@ class PawnGenerator extends Generator {
         }
     }
 
-    private boolean isOnStartingRow(Board board, int from) {
+    private static boolean isOnStartingRow(Board board, int from) {
         var row = Board.getRow(from);
         return board.isWhiteTurn() ? row == 2 : row == 7;
     }

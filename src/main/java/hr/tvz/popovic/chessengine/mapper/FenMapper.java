@@ -2,7 +2,10 @@ package hr.tvz.popovic.chessengine.mapper;
 
 import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Piece;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FenMapper {
 
     public static String toFen(Board board) {

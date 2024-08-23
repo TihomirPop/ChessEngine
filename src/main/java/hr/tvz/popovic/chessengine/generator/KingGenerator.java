@@ -4,26 +4,23 @@ import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class KingGenerator extends Generator {
-    private final CheckGenerator checkGenerator;
 
-    @Override
-    public List<Move> from(Board board, int from) {
+    public static List<Move> from(Board board, int from) {
         var moves = generateCastlingMoves(board, from);
         moves.addAll(generateDirectionMoves(board, from));
 
         return moves;
     }
 
-    private List<Move> generateCastlingMoves(Board board, int from) {
+    private static List<Move> generateCastlingMoves(Board board, int from) {
         List<Move> moves = new ArrayList<>();
         var isWhiteTurn = board.isWhiteTurn();
         var kingStartPos = isWhiteTurn ? 60 : 4;
@@ -40,7 +37,7 @@ class KingGenerator extends Generator {
         if ((isWhiteTurn && board.isWhiteKingSideCastle()) || (!isWhiteTurn && board.isBlackKingSideCastle())) {
             if (board.getPiece(kingSidePos1) == Piece.EMPTY && board.getPiece(kingSidePos2) == Piece.EMPTY &&
                     board.getPiece(kingSideRookPos) == (isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK)) {
-                if (checkGenerator.from(board, kingStartPos).isEmpty() && checkGenerator.from(board, kingSidePos1).isEmpty()) {
+                if (CheckGenerator.from(board, kingStartPos).isEmpty() && CheckGenerator.from(board, kingSidePos1).isEmpty()) {
                     moves.add(new Move(from, kingSidePos2, Move.Type.CASTLING));
                 }
             }
@@ -49,7 +46,7 @@ class KingGenerator extends Generator {
         if ((isWhiteTurn && board.isWhiteQueenSideCastle()) || (!isWhiteTurn && board.isBlackQueenSideCastle())) {
             if (board.getPiece(queenSidePos1) == Piece.EMPTY && board.getPiece(queenSidePos2) == Piece.EMPTY && board.getPiece(queenSidePos3) == Piece.EMPTY &&
                     board.getPiece(queenSideRookPos) == (isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK)) {
-                if (checkGenerator.from(board, kingStartPos).isEmpty() && checkGenerator.from(board, queenSidePos1).isEmpty()) {
+                if (CheckGenerator.from(board, kingStartPos).isEmpty() && CheckGenerator.from(board, queenSidePos1).isEmpty()) {
                     moves.add(new Move(from, queenSidePos2, Move.Type.CASTLING));
                 }
             }
