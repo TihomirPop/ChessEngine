@@ -17,7 +17,7 @@ public class Perft {
                 .parallelStream()
                 .mapToLong(move -> {
                     var newBoard = board.createCopy();
-                    newBoard.makeMove(move);
+                    newBoard.makeMoveWithEvalGuess(move);
                     var nodes = perft(newBoard, depth - 1);
                     log.info("{}: {}", move, nodes);
                     return nodes;
@@ -38,7 +38,7 @@ public class Perft {
 
         for (var move : moves) {
             var newBoard = board.createCopy();
-            newBoard.makeMove(move);
+            newBoard.makeMoveWithEvalGuess(move);
             nodes += perft(newBoard, depth - 1);
         }
 

@@ -24,7 +24,8 @@ public class Generators {
                 var moves = generateMoves(piece, board, i);
                 for (var move : moves) {
                     var newBoard = board.createCopy();
-                    newBoard.makeMove(move);
+                    var guessEval = newBoard.makeMoveWithEvalGuess(move);
+                    move.setGuessEval(guessEval);
                     newBoard.setWhiteTurn(!newBoard.isWhiteTurn());
                     if (CheckGenerator.from(newBoard, newBoard.getKingIndex()).isEmpty()) {
                         allMoves.add(move);

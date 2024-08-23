@@ -2,7 +2,9 @@ package hr.tvz.popovic.chessengine.model;
 
 import hr.tvz.popovic.chessengine.mapper.AlgebraicNotationMapper;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 
 @AllArgsConstructor
@@ -12,6 +14,9 @@ public final class Move {
     private final byte from;
     private final byte to;
     private final Type type;
+    @Getter
+    @Setter
+    private int guessEval;
 
     public Move(int from, int to) {
         this((byte) from, (byte) to, Type.NORMAL);

@@ -19,8 +19,12 @@ public class Board {
     private int enPassantSquare = -1;
     private int halfMoveClock = 0;
     private int fullMoveNumber = 1;
+    @EqualsAndHashCode.Exclude
     private int whiteKingIndex;
+    @EqualsAndHashCode.Exclude
     private int blackKingIndex;
+    @EqualsAndHashCode.Exclude
+    private boolean isCheckMate = false;
 
     public static Board createInitialBoard() {
         Board board = new Board();
@@ -41,6 +45,7 @@ public class Board {
         copy.fullMoveNumber = fullMoveNumber;
         copy.whiteKingIndex = whiteKingIndex;
         copy.blackKingIndex = blackKingIndex;
+        copy.isCheckMate = isCheckMate;
         return copy;
     }
 
@@ -58,18 +63,22 @@ public class Board {
         return index % 8 + 1;
     }
 
-    public boolean isCurrentPlayerPiece(int index) {
-        return isWhiteTurn ?
-                Piece.WHITE_PIECES.contains(board[index]) :
-                Piece.BLACK_PIECES.contains(board[index]);
-    }
-
-    public void makeMove(Move move) {
+    public int makeMoveWithEvalGuess(Move move) {
+        var to = move.to();
+        var capturedPiece = board[to];
         if(enPassantSquare != -1) {
             enPassantSquare = -1;
         }
 
-        switch (move.type()) {
+        if(capturedPiece == Piece.WHITE_KING) {
+            isCheckMate = true;
+            return Integer.MIN_VALUE;
+        } else if(capturedPiece == Piece.BLACK_KING) {
+            isCheckMate = true;
+            return Integer.MAX_VALUE;
+        }
+
+        var score = switch (move.type()) {
             case CASTLING -> makeCastlingMove(move);
             case DOUBLE_PAWN_PUSH -> makeDoublePawnPush(move);
             case EN_PASSANT -> makeEnPassantMove(move);
@@ -79,15 +88,19 @@ public class Board {
             case KNIGHT_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT);
             case FIRST_MOVE -> makeFirstMove(move);
             default -> makeRegularMove(move);
-        }
-        var to = move.to();
+        };
+
         board[move.from()] = Piece.EMPTY;
         if (board[to] == Piece.WHITE_KING) {
             whiteKingIndex = to;
         } else if (board[to] == Piece.BLACK_KING) {
             blackKingIndex = to;
         }
+        if (!isWhiteTurn) {
+            fullMoveNumber++;
+        }
         setWhiteTurn(!isWhiteTurn);
+        return score;
     }
 
     public Piece getPiece(int index) {
@@ -104,6 +117,18 @@ public class Board {
 
     public int getKingIndex() {
         return isWhiteTurn ? whiteKingIndex : blackKingIndex;
+    }
+
+    public int getStaticEvaluation() {
+        var score = 0;
+        for (int i = 0; i < 64; i++) {
+            var piece = board[i];
+            if (piece == Piece.EMPTY) {
+                continue;
+            }
+            score += piece.getValue();
+        }
+        return score;
     }
 
     @Override
@@ -164,30 +189,48 @@ public class Board {
         }
     }
 
-    private void makeRegularMove(Move move) {
+    private int makeRegularMove(Move move) {
+        var capturedPiece = board[move.to()];
+        var movePiece = board[move.from()];
+
         board[move.to()] = board[move.from()];
+
+        if (capturedPiece == Piece.EMPTY) {
+            return 0;
+        }
+        return Math.abs(10 * capturedPiece.getValue() - movePiece.getValue());
     }
 
-    private void makePromotionMove(Move move, Piece piece) {
+    private int makePromotionMove(Move move, Piece piece) {
+        var capturedPiece = board[move.to()];
+        var movePiece = board[move.from()];
+
         board[move.to()] = piece;
+
+        if(capturedPiece == Piece.EMPTY) {
+            return Math.abs(piece.getValue());
+        }
+        return Math.abs(10 * capturedPiece.getValue() - movePiece.getValue() + piece.getValue());
     }
 
-    private void makeEnPassantMove(Move move) {
+    private int makeEnPassantMove(Move move) {
         var captureIndex = isWhiteTurn ?
                 move.to() + Direction.DOWN.getOffset() :
                 move.to() + Direction.UP.getOffset();
         makeRegularMove(move);
         board[captureIndex] = Piece.EMPTY;
+        return 900;
     }
 
-    private void makeDoublePawnPush(Move move) {
+    private int makeDoublePawnPush(Move move) {
         makeRegularMove(move);
         enPassantSquare = isWhiteTurn ?
                 move.from() + Direction.UP.getOffset() :
                 move.from() + Direction.DOWN.getOffset();
+        return 50;
     }
 
-    private void makeCastlingMove(Move move) {
+    private int makeCastlingMove(Move move) {
         makeRegularMove(move);
         switch (move.to()) {
             case 2 -> {
@@ -215,10 +258,12 @@ public class Board {
                 isWhiteQueenSideCastle = false;
             }
         }
+
+        return 1000;
     }
 
-    private void makeFirstMove(Move move) {
-        makeRegularMove(move);
+    private int makeFirstMove(Move move) {
+        var score = makeRegularMove(move);
         switch (board[move.from()]) {
             case WHITE_KING -> {
                 isWhiteKingSideCastle = false;
@@ -243,6 +288,7 @@ public class Board {
                 }
             }
         }
+        return score;
     }
 
 }
