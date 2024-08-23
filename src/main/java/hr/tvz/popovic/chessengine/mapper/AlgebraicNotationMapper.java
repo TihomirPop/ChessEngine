@@ -1,5 +1,9 @@
 package hr.tvz.popovic.chessengine.mapper;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AlgebraicNotationMapper {
 
     public static String toAlgebraicNotation(int square) {
@@ -17,11 +21,10 @@ public class AlgebraicNotationMapper {
         char file = notation.charAt(0);
         char rank = notation.charAt(1);
 
-        int column = file - 'a';  // 'a' corresponds to column 0, 'b' to 1, and so on.
-        int row = 8 - Character.getNumericValue(rank);  // '8' corresponds to row 0, '7' to 1, and so on.
+        int column = file - 'a';
+        int row = 8 - Character.getNumericValue(rank);
 
         return row * 8 + column;
     }
-
 
 }

@@ -4,18 +4,16 @@ import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CheckGenerator extends SlidingGenerator {
 
-    @Override
-    public List<Move> from(Board board, int from) {
+    public static List<Move> from(Board board, int from) {
         var moves = generatePawnAttacks(board, from);
         moves.addAll(generateKnightAttacks(board, from));
         moves.addAll(generateKingAttacks(board, from));
@@ -25,10 +23,18 @@ public class CheckGenerator extends SlidingGenerator {
     }
 
     private static List<Move> generateAllSlidingAttacks(Board board, int from) {
-        return Arrays.stream(Direction.values())
-                .map(direction -> generateSlidingAttacks(board, from, direction))
-                .flatMap(List::stream)
-                .toList();
+        List<Move> list = new ArrayList<>();
+
+        list.addAll(generateSlidingAttacks(board, from, Direction.UP));
+        list.addAll(generateSlidingAttacks(board, from, Direction.DOWN));
+        list.addAll(generateSlidingAttacks(board, from, Direction.LEFT));
+        list.addAll(generateSlidingAttacks(board, from, Direction.RIGHT));
+        list.addAll(generateSlidingAttacks(board, from, Direction.UP_LEFT));
+        list.addAll(generateSlidingAttacks(board, from, Direction.UP_RIGHT));
+        list.addAll(generateSlidingAttacks(board, from, Direction.DOWN_LEFT));
+        list.addAll(generateSlidingAttacks(board, from, Direction.DOWN_RIGHT));
+
+        return list;
     }
 
     private static List<Move> generateSlidingAttacks(Board board, int from, Direction direction) {
@@ -81,24 +87,24 @@ public class CheckGenerator extends SlidingGenerator {
     }
 
     private static List<Move> generateKnightAttacks(Board board, int from) {
-        return IntStream.of(from - 17, from - 15, from - 10, from - 6, from + 6, from + 10, from + 15, from + 17)
-                .filter(Generator::isIndexInBounds)
-                .filter(to -> Generator.isPieceOnIndexNotFriendly(board, to))
-                .filter(to -> KnightGenerator.isValidKnightMove(from, to))
-                .filter(to -> board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT))
-                .mapToObj(to -> new Move(from, to))
-                .toList();
+        List<Move> list = new ArrayList<>();
+        for (int to : new int[]{from - 17, from - 15, from - 10, from - 6, from + 6, from + 10, from + 15, from + 17}) {
+            if (Generator.isIndexInBounds(to) && Generator.isPieceOnIndexNotFriendly(board, to) && KnightGenerator.isValidKnightMove(from, to) && (board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KNIGHT : Piece.WHITE_KNIGHT))) {
+                list.add(new Move(from, to));
+            }
+        }
+        return list;
     }
 
     private static List<Move> generateKingAttacks(Board board, int from) {
-        return Arrays.stream(Direction.values())
-                .map(direction -> from + direction.getOffset())
-                .filter(Generator::isIndexInBounds)
-                .filter(to -> Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1)
-                .filter(to -> Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1)
-                .filter(to -> board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KING : Piece.WHITE_KING))
-                .map(to -> new Move(from, to))
-                .toList();
+        List<Move> list = new ArrayList<>();
+        for (Direction direction : Direction.values()) {
+            int to = from + direction.getOffset();
+            if (Generator.isIndexInBounds(to) && (Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1) && (Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1) && (board.getPiece(to) == (board.isWhiteTurn() ? Piece.BLACK_KING : Piece.WHITE_KING))) {
+                list.add(new Move(from, to));
+            }
+        }
+        return list;
     }
 
 }

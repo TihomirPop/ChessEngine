@@ -3,64 +3,48 @@ package hr.tvz.popovic.chessengine.generator;
 import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Generators {
 
-    private final Map<Piece, Generator> pieceToGenerator;
-    private final CheckGenerator checkGenerator;
-
-    private Generators(
-            KingGenerator kingGenerator,
-            RookGenerator rookGenerator,
-            BishopGenerator bishopGenerator,
-            QueenGenerator queenGenerator,
-            KnightGenerator knightGenerator,
-            PawnGenerator pawnGenerator,
-            EmptyGenerator emptyGenerator,
-            CheckGenerator checkGenerator
-    ) {
-        pieceToGenerator = HashMap.newHashMap(13);
-        pieceToGenerator.put(Piece.WHITE_KING, kingGenerator);
-        pieceToGenerator.put(Piece.WHITE_ROOK, rookGenerator);
-        pieceToGenerator.put(Piece.WHITE_BISHOP, bishopGenerator);
-        pieceToGenerator.put(Piece.WHITE_QUEEN, queenGenerator);
-        pieceToGenerator.put(Piece.WHITE_KNIGHT, knightGenerator);
-        pieceToGenerator.put(Piece.WHITE_PAWN, pawnGenerator);
-        pieceToGenerator.put(Piece.BLACK_KING, kingGenerator);
-        pieceToGenerator.put(Piece.BLACK_ROOK, rookGenerator);
-        pieceToGenerator.put(Piece.BLACK_BISHOP, bishopGenerator);
-        pieceToGenerator.put(Piece.BLACK_QUEEN, queenGenerator);
-        pieceToGenerator.put(Piece.BLACK_KNIGHT, knightGenerator);
-        pieceToGenerator.put(Piece.BLACK_PAWN, pawnGenerator);
-        pieceToGenerator.put(Piece.EMPTY, emptyGenerator);
-        this.checkGenerator = checkGenerator;
-    }
-
-    public Generator generateFor(Piece piece) {
-        return pieceToGenerator.get(piece);
-    }
-
-    public List<Move> generateAllMoves(Board board) {
-        return IntStream.range(0, 64)
-                .filter(board::isCurrentPlayerPiece)
-                .mapToObj(i -> generateFor(board.getPiece(i)).from(board, i))
-                .flatMap(List::stream)
-                .filter(move -> {
+    public static List<Move> generateAllMoves(Board board) {
+        List<Move> allMoves = new ArrayList<>();
+        Piece piece;
+        for (var i = 0; i < 64; i++) {
+            piece = board.getPiece(i);
+            if(piece == Piece.EMPTY) {
+                continue;
+            }
+            if (board.isWhiteTurn() ? Piece.isWhitePiece(piece) : Piece.isBlackPiece(piece)) {
+                var moves = generateMoves(piece, board, i);
+                for (var move : moves) {
                     var newBoard = board.createCopy();
                     newBoard.makeMove(move);
                     newBoard.setWhiteTurn(!newBoard.isWhiteTurn());
-                    return checkGenerator.from(newBoard, newBoard.getKingIndex())
-                            .isEmpty();
-                })
-                .toList();
+                    if (CheckGenerator.from(newBoard, newBoard.getKingIndex()).isEmpty()) {
+                        allMoves.add(move);
+                    }
+                }
+            }
+        }
+        return allMoves;
     }
 
+    public static List<Move> generateMoves(Piece piece, Board board, int i) {
+        return switch (piece) {
+            case WHITE_KING, BLACK_KING -> KingGenerator.from(board, i);
+            case WHITE_ROOK, BLACK_ROOK -> RookGenerator.from(board, i);
+            case WHITE_BISHOP, BLACK_BISHOP -> BishopGenerator.from(board, i);
+            case WHITE_QUEEN, BLACK_QUEEN -> QueenGenerator.from(board, i);
+            case WHITE_KNIGHT, BLACK_KNIGHT -> KnightGenerator.from(board, i);
+            case WHITE_PAWN, BLACK_PAWN -> PawnGenerator.from(board, i);
+            default -> throw new IllegalArgumentException("Invalid piece: " + piece);
+        };
+    }
 
 }

@@ -2,22 +2,23 @@ package hr.tvz.popovic.chessengine.generator;
 
 import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Move;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class KnightGenerator extends Generator {
 
-    @Override
-    public List<Move> from(Board board, int from) {
-        return IntStream.of(from - 17, from - 15, from - 10, from - 6, from + 6, from + 10, from + 15, from + 17)
-                .filter(Generator::isIndexInBounds)
-                .filter(to -> Generator.isPieceOnIndexNotFriendly(board, to))
-                .filter(to -> isValidKnightMove(from, to))
-                .mapToObj(to -> new Move(from, to))
-                .toList();
+    public static List<Move> from(Board board, int from) {
+        List<Move> list = new ArrayList<>();
+        for (int to : new int[]{from - 17, from - 15, from - 10, from - 6, from + 6, from + 10, from + 15, from + 17}) {
+            if (Generator.isIndexInBounds(to) && Generator.isPieceOnIndexNotFriendly(board, to) && isValidKnightMove(from, to)) {
+                list.add(new Move(from, to));
+            }
+        }
+        return list;
     }
 
     public static boolean isValidKnightMove(int from, int to) {

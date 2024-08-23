@@ -4,27 +4,23 @@ import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-@Component
-@RequiredArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class KingGenerator extends Generator {
-    private final CheckGenerator checkGenerator;
 
-    @Override
-    public List<Move> from(Board board, int from) {
+    public static List<Move> from(Board board, int from) {
         var moves = generateCastlingMoves(board, from);
         moves.addAll(generateDirectionMoves(board, from));
 
         return moves;
     }
 
-    private List<Move> generateCastlingMoves(Board board, int from) {
+    private static List<Move> generateCastlingMoves(Board board, int from) {
         List<Move> moves = new ArrayList<>();
         var isWhiteTurn = board.isWhiteTurn();
         var kingStartPos = isWhiteTurn ? 60 : 4;
@@ -41,7 +37,7 @@ class KingGenerator extends Generator {
         if ((isWhiteTurn && board.isWhiteKingSideCastle()) || (!isWhiteTurn && board.isBlackKingSideCastle())) {
             if (board.getPiece(kingSidePos1) == Piece.EMPTY && board.getPiece(kingSidePos2) == Piece.EMPTY &&
                     board.getPiece(kingSideRookPos) == (isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK)) {
-                if (checkGenerator.from(board, kingStartPos).isEmpty() && checkGenerator.from(board, kingSidePos1).isEmpty()) {
+                if (CheckGenerator.from(board, kingStartPos).isEmpty() && CheckGenerator.from(board, kingSidePos1).isEmpty()) {
                     moves.add(new Move(from, kingSidePos2, Move.Type.CASTLING));
                 }
             }
@@ -50,7 +46,7 @@ class KingGenerator extends Generator {
         if ((isWhiteTurn && board.isWhiteQueenSideCastle()) || (!isWhiteTurn && board.isBlackQueenSideCastle())) {
             if (board.getPiece(queenSidePos1) == Piece.EMPTY && board.getPiece(queenSidePos2) == Piece.EMPTY && board.getPiece(queenSidePos3) == Piece.EMPTY &&
                     board.getPiece(queenSideRookPos) == (isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK)) {
-                if (checkGenerator.from(board, kingStartPos).isEmpty() && checkGenerator.from(board, queenSidePos1).isEmpty()) {
+                if (CheckGenerator.from(board, kingStartPos).isEmpty() && CheckGenerator.from(board, queenSidePos1).isEmpty()) {
                     moves.add(new Move(from, queenSidePos2, Move.Type.CASTLING));
                 }
             }
@@ -64,14 +60,15 @@ class KingGenerator extends Generator {
                 board.isWhiteQueenSideCastle() || board.isWhiteKingSideCastle() :
                 board.isBlackQueenSideCastle() || board.isBlackKingSideCastle();
 
-        return Arrays.stream(Direction.values())
-                .map(direction -> from + direction.getOffset())
-                .filter(Generator::isIndexInBounds)
-                .filter(to -> Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1)
-                .filter(to -> Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1)
-                .filter(to -> Generator.isPieceOnIndexNotFriendly(board, to))
-                .map(to -> isFirstMove ? new Move(from, to, Move.Type.FIRST_MOVE) : new Move(from, to))
-                .toList();
+        List<Move> list = new ArrayList<>();
+        for (Direction direction : Direction.values()) {
+            int to = from + direction.getOffset();
+            if (Generator.isIndexInBounds(to) && (Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1) && (Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1) && Generator.isPieceOnIndexNotFriendly(board, to)) {
+                Move move = isFirstMove ? new Move(from, to, Move.Type.FIRST_MOVE) : new Move(from, to);
+                list.add(move);
+            }
+        }
+        return list;
     }
 
 }

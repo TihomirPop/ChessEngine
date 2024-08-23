@@ -2,7 +2,10 @@ package hr.tvz.popovic.chessengine.mapper;
 
 import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Piece;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FenMapper {
 
     public static String toFen(Board board) {
@@ -113,7 +116,13 @@ public class FenMapper {
             } else if (Character.isDigit(c)) {
                 squareIndex += c - '0';
             } else {
-                board.setPiece(squareIndex, Piece.fromFen(c));
+                Piece piece = Piece.fromFen(c);
+                board.setPiece(squareIndex, piece);
+                if(piece == Piece.WHITE_KING) {
+                    board.setWhiteKingIndex(squareIndex);
+                } else if(piece == Piece.BLACK_KING) {
+                    board.setBlackKingIndex(squareIndex);
+                }
                 squareIndex++;
             }
         }

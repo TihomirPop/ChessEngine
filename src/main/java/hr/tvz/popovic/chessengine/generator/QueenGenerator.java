@@ -3,29 +3,28 @@ package hr.tvz.popovic.chessengine.generator;
 import hr.tvz.popovic.chessengine.model.Board;
 import hr.tvz.popovic.chessengine.model.Direction;
 import hr.tvz.popovic.chessengine.model.Move;
-import org.springframework.stereotype.Component;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-@Component
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 class QueenGenerator extends SlidingGenerator {
 
-    @Override
-    public List<Move> from(Board board, int from) {
-        return Stream.of(
-                        Direction.UP,
-                        Direction.DOWN,
-                        Direction.LEFT,
-                        Direction.RIGHT,
-                        Direction.UP_LEFT,
-                        Direction.UP_RIGHT,
-                        Direction.DOWN_LEFT,
-                        Direction.DOWN_RIGHT
-                )
-                .map(direction -> generateSlidingMoves(board, from, direction))
-                .flatMap(List::stream)
-                .toList();
+    public static List<Move> from(Board board, int from) {
+        List<Move> list = new ArrayList<>();
+
+        list.addAll(generateSlidingMoves(board, from, Direction.UP));
+        list.addAll(generateSlidingMoves(board, from, Direction.DOWN));
+        list.addAll(generateSlidingMoves(board, from, Direction.LEFT));
+        list.addAll(generateSlidingMoves(board, from, Direction.RIGHT));
+        list.addAll(generateSlidingMoves(board, from, Direction.UP_LEFT));
+        list.addAll(generateSlidingMoves(board, from, Direction.UP_RIGHT));
+        list.addAll(generateSlidingMoves(board, from, Direction.DOWN_LEFT));
+        list.addAll(generateSlidingMoves(board, from, Direction.DOWN_RIGHT));
+
+        return list;
     }
 
 }

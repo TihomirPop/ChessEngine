@@ -1,11 +1,24 @@
 package hr.tvz.popovic.chessengine.model;
 
 import hr.tvz.popovic.chessengine.mapper.AlgebraicNotationMapper;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-public record Move(int from, int to, Type type) {
+
+@AllArgsConstructor
+@RequiredArgsConstructor
+public final class Move {
+
+    private final byte from;
+    private final byte to;
+    private final Type type;
 
     public Move(int from, int to) {
-        this(from, to, Type.NORMAL);
+        this((byte) from, (byte) to, Type.NORMAL);
+    }
+
+    public Move(int from, int to, Type type) {
+        this((byte) from, (byte) to, type);
     }
 
     @Override
@@ -24,6 +37,18 @@ public record Move(int from, int to, Type type) {
         return builder.toString();
     }
 
+    public byte from() {
+        return from;
+    }
+
+    public byte to() {
+        return to;
+    }
+
+    public Type type() {
+        return type;
+    }
+
     public enum Type {
         NORMAL,
         CASTLING,
@@ -35,4 +60,5 @@ public record Move(int from, int to, Type type) {
         EN_PASSANT,
         FIRST_MOVE
     }
+
 }

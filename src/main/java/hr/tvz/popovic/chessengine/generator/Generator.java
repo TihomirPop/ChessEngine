@@ -1,14 +1,9 @@
 package hr.tvz.popovic.chessengine.generator;
 
 import hr.tvz.popovic.chessengine.model.Board;
-import hr.tvz.popovic.chessengine.model.Move;
 import hr.tvz.popovic.chessengine.model.Piece;
 
-import java.util.List;
-
 public abstract class Generator {
-
-    public abstract List<Move> from(Board board, int from);
 
     static boolean isIndexInBounds(int index) {
         return index >= 0 && index < 64;
@@ -26,24 +21,24 @@ public abstract class Generator {
         }
 
         return board.isWhiteTurn() ?
-                Piece.BLACK_PIECES.contains(piece) :
-                Piece.WHITE_PIECES.contains(piece);
+                Piece.isBlackPiece(piece) :
+                Piece.isWhitePiece(piece);
     }
 
     static boolean isPieceOnIndexOpponent(Board board, int index) {
         var piece = board.getPiece(index);
 
         return board.isWhiteTurn() ?
-                Piece.BLACK_PIECES.contains(piece) :
-                Piece.WHITE_PIECES.contains(piece);
+                Piece.isBlackPiece(piece) :
+                Piece.isWhitePiece(piece);
     }
 
     static boolean isPieceOnIndexFriendly(Board board, int index) {
         var piece = board.getPiece(index);
 
         return board.isWhiteTurn() ?
-                Piece.WHITE_PIECES.contains(piece) :
-                Piece.BLACK_PIECES.contains(piece);
+                Piece.isWhitePiece(piece) :
+                Piece.isBlackPiece(piece);
     }
 
 

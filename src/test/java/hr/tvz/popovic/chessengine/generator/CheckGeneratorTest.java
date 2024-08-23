@@ -9,8 +9,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CheckGeneratorTest {
 
-    CheckGenerator checkGenerator = new CheckGenerator();
-
     @Test
     void shouldReturnCheckingSlidingMoves() {
         var board = Board.createEmptyBoard();
@@ -27,7 +25,7 @@ class CheckGeneratorTest {
         board.setPiece(53, Piece.BLACK_QUEEN);
         board.setPiece(42, Piece.BLACK_KING);
 
-        var moves = checkGenerator.from(board, 35);
+        var moves = CheckGenerator.from(board, 35);
 
         assertThat(moves).hasSize(7)
                 .containsExactlyInAnyOrder(
