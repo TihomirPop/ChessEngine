@@ -10,14 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Perft {
 
-    public static void runPerft(Board board, int depth) {
+    public static long runPerft(Board board, int depth) {
         log.info("Perft of depth {} for board:\n{}", depth, board);
         var from = System.currentTimeMillis();
         var totalNodes = Generators.generateAllMoves(board)
                 .parallelStream()
                 .mapToLong(move -> {
                     var newBoard = board.createCopy();
-                    newBoard.makeMoveWithEvalGuess(move);
+                    newBoard.makeMove(move);
                     var nodes = perft(newBoard, depth - 1);
                     log.info("{}: {}", move, nodes);
                     return nodes;
@@ -25,6 +25,7 @@ public class Perft {
                 .sum();
         log.info("Total Nodes: {}", totalNodes);
         log.info("Time: {}ms", System.currentTimeMillis() - from);
+        return (int) totalNodes;
     }
 
 
@@ -38,7 +39,7 @@ public class Perft {
 
         for (var move : moves) {
             var newBoard = board.createCopy();
-            newBoard.makeMoveWithEvalGuess(move);
+            newBoard.makeMove(move);
             nodes += perft(newBoard, depth - 1);
         }
 

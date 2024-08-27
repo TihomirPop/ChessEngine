@@ -20,25 +20,27 @@ public abstract class Generator {
             return true;
         }
 
-        return board.isWhiteTurn() ?
-                Piece.isBlackPiece(piece) :
-                Piece.isWhitePiece(piece);
+        return board.isWhiteTurn() != piece.getIsWhite();
     }
 
     static boolean isPieceOnIndexOpponent(Board board, int index) {
         var piece = board.getPiece(index);
 
-        return board.isWhiteTurn() ?
-                Piece.isBlackPiece(piece) :
-                Piece.isWhitePiece(piece);
+        if (piece == Piece.EMPTY) {
+            return false;
+        }
+
+        return board.isWhiteTurn() != piece.getIsWhite();
     }
 
     static boolean isPieceOnIndexFriendly(Board board, int index) {
         var piece = board.getPiece(index);
 
-        return board.isWhiteTurn() ?
-                Piece.isWhitePiece(piece) :
-                Piece.isBlackPiece(piece);
+        if (piece == Piece.EMPTY) {
+            return false;
+        }
+
+        return board.isWhiteTurn() == piece.getIsWhite();
     }
 
 

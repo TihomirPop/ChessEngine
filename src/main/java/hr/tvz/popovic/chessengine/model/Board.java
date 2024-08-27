@@ -1,8 +1,14 @@
 package hr.tvz.popovic.chessengine.model;
 
+import hr.tvz.popovic.chessengine.helper.PrecomputedConstants;
 import lombok.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import static hr.tvz.popovic.chessengine.helper.PrecomputedConstants.*;
+
 
 @Setter
 @Getter
@@ -24,7 +30,13 @@ public class Board {
     @EqualsAndHashCode.Exclude
     private int blackKingIndex;
     @EqualsAndHashCode.Exclude
-    private boolean isCheckMate = false;
+    private int numberOfBlackPieces;
+    @EqualsAndHashCode.Exclude
+    private int numberOfWhitePieces;
+    @EqualsAndHashCode.Exclude
+    private Map<Integer, Byte> repetitionMap = new HashMap<>();
+    @EqualsAndHashCode.Exclude
+    private boolean isStalemate = false;
 
     public static Board createInitialBoard() {
         Board board = new Board();
@@ -45,7 +57,10 @@ public class Board {
         copy.fullMoveNumber = fullMoveNumber;
         copy.whiteKingIndex = whiteKingIndex;
         copy.blackKingIndex = blackKingIndex;
-        copy.isCheckMate = isCheckMate;
+        copy.numberOfBlackPieces = numberOfBlackPieces;
+        copy.numberOfWhitePieces = numberOfWhitePieces;
+        copy.repetitionMap = new HashMap<>(repetitionMap);
+
         return copy;
     }
 
@@ -63,34 +78,45 @@ public class Board {
         return index % 8 + 1;
     }
 
-    public int makeMoveWithEvalGuess(Move move) {
+    public void makeMove(Move move) {
+        makeMoveWithEvalGuess(move, false);
+    }
+
+    public int makeMoveWithEvalGuess(Move move, boolean isEvalGuess) {
         var to = move.to();
+        var from = move.from();
         var capturedPiece = board[to];
-        if(enPassantSquare != -1) {
+        var movePiece = board[from];
+
+        if (enPassantSquare != -1) {
             enPassantSquare = -1;
         }
 
-        if(capturedPiece == Piece.WHITE_KING) {
-            isCheckMate = true;
-            return Integer.MIN_VALUE;
-        } else if(capturedPiece == Piece.BLACK_KING) {
-            isCheckMate = true;
-            return Integer.MAX_VALUE;
+        if (capturedPiece != Piece.EMPTY) {
+            if (capturedPiece.getIsWhite()) {
+                numberOfWhitePieces--;
+            } else {
+                numberOfBlackPieces--;
+            }
         }
 
         var score = switch (move.type()) {
             case CASTLING -> makeCastlingMove(move);
             case DOUBLE_PAWN_PUSH -> makeDoublePawnPush(move);
-            case EN_PASSANT -> makeEnPassantMove(move);
-            case QUEEN_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN);
-            case ROOK_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK);
-            case BISHOP_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP);
-            case KNIGHT_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT);
-            case FIRST_MOVE -> makeFirstMove(move);
-            default -> makeRegularMove(move);
+            case EN_PASSANT -> makeEnPassantMove(move, isEvalGuess);
+            case QUEEN_PROMOTION ->
+                    makePromotionMove(move, isWhiteTurn ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN, isEvalGuess);
+            case ROOK_PROMOTION ->
+                    makePromotionMove(move, isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK, isEvalGuess);
+            case BISHOP_PROMOTION ->
+                    makePromotionMove(move, isWhiteTurn ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP, isEvalGuess);
+            case KNIGHT_PROMOTION ->
+                    makePromotionMove(move, isWhiteTurn ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT, isEvalGuess);
+            case FIRST_MOVE -> makeFirstMove(move, isEvalGuess);
+            default -> makeRegularMove(move, isEvalGuess);
         };
 
-        board[move.from()] = Piece.EMPTY;
+        board[from] = Piece.EMPTY;
         if (board[to] == Piece.WHITE_KING) {
             whiteKingIndex = to;
         } else if (board[to] == Piece.BLACK_KING) {
@@ -100,6 +126,26 @@ public class Board {
             fullMoveNumber++;
         }
         setWhiteTurn(!isWhiteTurn);
+
+        var hash = Arrays.hashCode(board);
+        var repetitionCount = repetitionMap.getOrDefault(hash, (byte) 0);
+        repetitionMap.put(hash, ++repetitionCount);
+
+        if (movePiece == Piece.WHITE_PAWN || movePiece == Piece.BLACK_PAWN || capturedPiece != Piece.EMPTY) {
+            halfMoveClock = 0;
+        } else {
+            halfMoveClock++;
+            if (halfMoveClock >= 100) {
+                isStalemate = true;
+                return 0;
+            }
+        }
+
+//        if (fullMoveNumber >= 50) {
+//            isStalemate = true;
+//            return 0;
+//        }
+
         return score;
     }
 
@@ -121,13 +167,17 @@ public class Board {
 
     public int getStaticEvaluation() {
         var score = 0;
-        for (int i = 0; i < 64; i++) {
-            var piece = board[i];
-            if (piece == Piece.EMPTY) {
-                continue;
-            }
-            score += piece.getValue();
-        }
+        score += getMaterialScore();
+        score += getOpponentKingAttackScore();
+
+        return score;
+    }
+
+    public int getStaticEvaluation2() {
+        var score = 0;
+        score += getMaterialScore2();
+        score += getOpponentKingAttackScore2();
+
         return score;
     }
 
@@ -135,7 +185,8 @@ public class Board {
     public String toString() {
         var sb = new StringBuilder();
         for (var i = 0; i < 64; i++) {
-            sb.append(board[i].toFen()).append(" ");
+            sb.append(board[i].toFen())
+                    .append(" ");
             if (i % 8 == 7) {
                 sb.append("\n");
             }
@@ -189,11 +240,15 @@ public class Board {
         }
     }
 
-    private int makeRegularMove(Move move) {
+    private int makeRegularMove(Move move, boolean isEvalGuess) {
         var capturedPiece = board[move.to()];
         var movePiece = board[move.from()];
 
         board[move.to()] = board[move.from()];
+
+        if (!isEvalGuess) {
+            return 0;
+        }
 
         if (capturedPiece == Piece.EMPTY) {
             return 0;
@@ -201,29 +256,34 @@ public class Board {
         return Math.abs(10 * capturedPiece.getValue() - movePiece.getValue());
     }
 
-    private int makePromotionMove(Move move, Piece piece) {
+    private int makePromotionMove(Move move, Piece piece, boolean isEvalGuess) {
         var capturedPiece = board[move.to()];
         var movePiece = board[move.from()];
 
         board[move.to()] = piece;
 
-        if(capturedPiece == Piece.EMPTY) {
-            return Math.abs(piece.getValue());
+        if (!isEvalGuess) {
+            return 0;
         }
+
+        if (capturedPiece == Piece.EMPTY) {
+            return piece.getValue();
+        }
+
         return Math.abs(10 * capturedPiece.getValue() - movePiece.getValue() + piece.getValue());
     }
 
-    private int makeEnPassantMove(Move move) {
+    private int makeEnPassantMove(Move move, boolean isEvalGuess) {
         var captureIndex = isWhiteTurn ?
                 move.to() + Direction.DOWN.getOffset() :
                 move.to() + Direction.UP.getOffset();
-        makeRegularMove(move);
+        makeRegularMove(move, isEvalGuess);
         board[captureIndex] = Piece.EMPTY;
         return 900;
     }
 
     private int makeDoublePawnPush(Move move) {
-        makeRegularMove(move);
+        makeRegularMove(move, false);
         enPassantSquare = isWhiteTurn ?
                 move.from() + Direction.UP.getOffset() :
                 move.from() + Direction.DOWN.getOffset();
@@ -231,7 +291,7 @@ public class Board {
     }
 
     private int makeCastlingMove(Move move) {
-        makeRegularMove(move);
+        makeRegularMove(move, false);
         switch (move.to()) {
             case 2 -> {
                 board[3] = Piece.BLACK_ROOK;
@@ -247,7 +307,7 @@ public class Board {
             }
             case 58 -> {
                 board[59] = Piece.WHITE_ROOK;
-                board[56] =Piece.EMPTY;
+                board[56] = Piece.EMPTY;
                 isWhiteKingSideCastle = false;
                 isWhiteQueenSideCastle = false;
             }
@@ -262,8 +322,8 @@ public class Board {
         return 1000;
     }
 
-    private int makeFirstMove(Move move) {
-        var score = makeRegularMove(move);
+    private int makeFirstMove(Move move, boolean isEvalGuess) {
+        var score = makeRegularMove(move, isEvalGuess);
         switch (board[move.from()]) {
             case WHITE_KING -> {
                 isWhiteKingSideCastle = false;
@@ -289,6 +349,84 @@ public class Board {
             }
         }
         return score;
+    }
+
+    private int getMaterialScore() {
+        var score = 0;
+        for (int i = 0; i < 64; i++) {
+            var piece = board[i];
+            if (piece == Piece.EMPTY) {
+                continue;
+            }
+            score += piece.getValue() * (piece.getIsWhite() ? 1 : -1);
+        }
+        return score;
+    }
+
+    private int getOpponentKingAttackScore() {
+        int opponentKingIndex = isWhiteTurn ? blackKingIndex : whiteKingIndex;
+        int numberOfOpponentPieces = isWhiteTurn ? numberOfBlackPieces : numberOfWhitePieces;
+        int numberOfFriendlyPieces = isWhiteTurn ? numberOfWhitePieces : numberOfBlackPieces;
+
+        if (numberOfFriendlyPieces <= numberOfOpponentPieces + 1) {
+            return 0;
+        }
+
+        int distanceBetweenKings = PrecomputedConstants.MANHATTAN_DISTANCE[whiteKingIndex][blackKingIndex];
+        int distanceOfEnemyKingFromCenter = PrecomputedConstants.CENTER_MANHATTAN_DISTANCE[opponentKingIndex];
+
+        int score = (int) ((1 - (numberOfOpponentPieces) / 16f) * (40 * (14 - distanceBetweenKings)) + (100 * distanceOfEnemyKingFromCenter));
+        return isWhiteTurn ? score : -score;
+    }
+
+    private int getMaterialScore2() {
+        var score = 0;
+        var numberOfOpponentPieces = isWhiteTurn ? numberOfBlackPieces : numberOfWhitePieces;
+        var endgameWeight = (1.001 - numberOfOpponentPieces / 16f);
+
+        for (int i = 0; i < 64; i++) {
+            var piece = board[i];
+            if (piece == Piece.EMPTY) {
+                continue;
+            }
+            score += switch (piece) {
+                case WHITE_PAWN -> endgameInterpolation(WHITE_PAWN_EVAL[i], WHITE_PAWN_EVAL_END[i], endgameWeight);
+                case BLACK_PAWN -> -endgameInterpolation(BLACK_PAWN_EVAL[i], BLACK_PAWN_EVAL_END[i], endgameWeight);
+                case WHITE_KNIGHT -> KNIGHT_EVAL[i];
+                case BLACK_KNIGHT -> -KNIGHT_EVAL[i];
+                case WHITE_BISHOP -> WHITE_BISHOP_EVAL[i];
+                case BLACK_BISHOP -> -BLACK_BISHOP_EVAL[i];
+                case WHITE_ROOK -> WHITE_ROOK_EVAL[i];
+                case BLACK_ROOK -> -BLACK_ROOK_EVAL[i];
+                case WHITE_QUEEN -> WHITE_QUEEN_EVAL[i];
+                case BLACK_QUEEN -> -BLACK_QUEEN_EVAL[i];
+                case WHITE_KING -> endgameInterpolation(WHITE_KING_EVAL[i], WHITE_KING_EVAL_END[i], endgameWeight);
+                case BLACK_KING -> -endgameInterpolation(BLACK_KING_EVAL[i], BLACK_KING_EVAL_END[i], endgameWeight);
+                default -> 0;
+            };
+        }
+        return score;
+    }
+
+    private int getOpponentKingAttackScore2() {
+        int opponentKingIndex = isWhiteTurn ? blackKingIndex : whiteKingIndex;
+        int numberOfOpponentPieces = isWhiteTurn ? numberOfBlackPieces : numberOfWhitePieces;
+        int numberOfFriendlyPieces = isWhiteTurn ? numberOfWhitePieces : numberOfBlackPieces;
+
+        if (numberOfFriendlyPieces <= numberOfOpponentPieces + 1) {
+            return 0;
+        }
+
+        int distanceBetweenKings = PrecomputedConstants.MANHATTAN_DISTANCE[whiteKingIndex][blackKingIndex];
+        int distanceOfEnemyKingFromCenter = PrecomputedConstants.CENTER_MANHATTAN_DISTANCE[opponentKingIndex];
+
+        int score = (int) ((1 - numberOfOpponentPieces / 16f) * (8 * (14 - distanceBetweenKings) + 15 * distanceOfEnemyKingFromCenter));
+
+        return isWhiteTurn ? score : -score;
+    }
+
+    private int endgameInterpolation(int initialScore, int endgameScore, double endgameWeight) {
+        return (int) (initialScore * (1 - endgameWeight) + endgameScore * endgameWeight);
     }
 
 }

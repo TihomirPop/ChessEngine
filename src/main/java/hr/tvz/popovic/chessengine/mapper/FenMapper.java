@@ -109,23 +109,34 @@ public class FenMapper {
     }
 
     private static void parsePieces(String pieces, Board board) {
-        int squareIndex = 0;
-        for (char c : pieces.toCharArray()) {
+        var squareIndex = 0;
+        var numberOfWhitePieces = 0;
+        var numberOfBlackPieces = 0;
+
+        for (var c : pieces.toCharArray()) {
             if (c == '/') {
                 continue;
             } else if (Character.isDigit(c)) {
                 squareIndex += c - '0';
             } else {
-                Piece piece = Piece.fromFen(c);
+                var piece = Piece.fromFen(c);
                 board.setPiece(squareIndex, piece);
                 if(piece == Piece.WHITE_KING) {
                     board.setWhiteKingIndex(squareIndex);
                 } else if(piece == Piece.BLACK_KING) {
                     board.setBlackKingIndex(squareIndex);
                 }
+                if (piece.getIsWhite()) {
+                    numberOfWhitePieces++;
+                } else {
+                    numberOfBlackPieces++;
+                }
                 squareIndex++;
             }
         }
+
+        board.setNumberOfWhitePieces(numberOfWhitePieces);
+        board.setNumberOfBlackPieces(numberOfBlackPieces);
     }
 
     private static void parseActiveColor(String activeColor, Board board) {
