@@ -44,7 +44,9 @@ class KingGenerator extends Generator {
         }
 
         if ((isWhiteTurn && board.isWhiteQueenSideCastle()) || (!isWhiteTurn && board.isBlackQueenSideCastle())) {
-            if (board.getPiece(queenSidePos1) == Piece.EMPTY && board.getPiece(queenSidePos2) == Piece.EMPTY && board.getPiece(queenSidePos3) == Piece.EMPTY &&
+            if (board.getPiece(queenSidePos1) == Piece.EMPTY &&
+                    board.getPiece(queenSidePos2) == Piece.EMPTY &&
+                    board.getPiece(queenSidePos3) == Piece.EMPTY &&
                     board.getPiece(queenSideRookPos) == (isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK)) {
                 if (CheckGenerator.from(board, kingStartPos).isEmpty() && CheckGenerator.from(board, queenSidePos1).isEmpty()) {
                     moves.add(new Move(from, queenSidePos2, Move.Type.CASTLING));
@@ -62,9 +64,12 @@ class KingGenerator extends Generator {
 
         List<Move> list = new ArrayList<>();
         for (Direction direction : Direction.values()) {
-            int to = from + direction.getOffset();
-            if (Generator.isIndexInBounds(to) && (Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1) && (Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1) && Generator.isPieceOnIndexNotFriendly(board, to)) {
-                Move move = isFirstMove ? new Move(from, to, Move.Type.FIRST_MOVE) : new Move(from, to);
+            var to = from + direction.getOffset();
+            if (Generator.isIndexInBounds(to) &&
+                    (Math.abs(Board.getColumn(from) - Board.getColumn(to)) <= 1) &&
+                    (Math.abs(Board.getRow(from) - Board.getRow(to)) <= 1) &&
+                    Generator.isPieceOnIndexNotFriendly(board, to)) {
+                var move = isFirstMove ? new Move(from, to, Move.Type.FIRST_MOVE) : new Move(from, to);
                 list.add(move);
             }
         }

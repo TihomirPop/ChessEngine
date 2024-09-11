@@ -9,7 +9,7 @@ import java.util.List;
 
 abstract class SlidingGenerator extends Generator {
 
-    protected static List<Move> generateSlidingMoves(Board board, int from, Direction direction) {
+    static List<Move> generateSlidingMoves(Board board, int from, Direction direction) {
         var offset = direction.getOffset();
         var directionType = direction.getType();
         var to = from;
@@ -36,7 +36,7 @@ abstract class SlidingGenerator extends Generator {
         return moves;
     }
 
-    protected static List<Move> generateSlidingMoves(Board board, int from, Direction direction, Move.Type moveType) {
+    static List<Move> generateSlidingMoves(Board board, int from, Direction direction, Move.Type moveType) {
         var offset = direction.getOffset();
         var directionType = direction.getType();
         var to = from;
@@ -63,11 +63,11 @@ abstract class SlidingGenerator extends Generator {
         return moves;
     }
 
-    protected static boolean wentToNewRow(int from, int to) {
+    static boolean wentToNewRow(int from, int to) {
         return Board.getRow(from) != Board.getRow(to);
     }
 
-    protected static boolean didNotGoDiagonally(int from, int to) {
+    static boolean didNotGoDiagonally(int from, int to) {
         return Math.abs(Board.getRow(from) - Board.getRow(to)) != Math.abs(Board.getColumn(to) - Board.getColumn(from));
     }
 

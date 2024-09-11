@@ -1,8 +1,14 @@
 package hr.tvz.popovic.chessengine.model;
 
+import hr.tvz.popovic.chessengine.evaluation.PrecomputedConstants;
 import lombok.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import static hr.tvz.popovic.chessengine.evaluation.PrecomputedConstants.*;
+
 
 @Setter
 @Getter
@@ -24,7 +30,15 @@ public class Board {
     @EqualsAndHashCode.Exclude
     private int blackKingIndex;
     @EqualsAndHashCode.Exclude
-    private boolean isCheckMate = false;
+    private int scoreOfBlackPieces;
+    @EqualsAndHashCode.Exclude
+    private int scoreOfWhitePieces;
+    @EqualsAndHashCode.Exclude
+    private Map<Integer, Byte> repetitionMap = new HashMap<>();
+    @EqualsAndHashCode.Exclude
+    private boolean isStalemate = false;
+    @EqualsAndHashCode.Exclude
+    private boolean isPlayer = false;
 
     public static Board createInitialBoard() {
         Board board = new Board();
@@ -45,7 +59,12 @@ public class Board {
         copy.fullMoveNumber = fullMoveNumber;
         copy.whiteKingIndex = whiteKingIndex;
         copy.blackKingIndex = blackKingIndex;
-        copy.isCheckMate = isCheckMate;
+        copy.scoreOfBlackPieces = scoreOfBlackPieces;
+        copy.scoreOfWhitePieces = scoreOfWhitePieces;
+        copy.repetitionMap = new HashMap<>(repetitionMap);
+        copy.isStalemate = isStalemate;
+        copy.isPlayer = isPlayer;
+
         return copy;
     }
 
@@ -63,34 +82,45 @@ public class Board {
         return index % 8 + 1;
     }
 
-    public int makeMoveWithEvalGuess(Move move) {
+    public void makeMove(Move move) {
+        makeMoveWithEvalGuess(move, false);
+    }
+
+    public int makeMoveWithEvalGuess(Move move, boolean isEvalGuess) {
         var to = move.to();
+        var from = move.from();
         var capturedPiece = board[to];
-        if(enPassantSquare != -1) {
+        var movePiece = board[from];
+
+        if (enPassantSquare != -1) {
             enPassantSquare = -1;
         }
 
-        if(capturedPiece == Piece.WHITE_KING) {
-            isCheckMate = true;
-            return Integer.MIN_VALUE;
-        } else if(capturedPiece == Piece.BLACK_KING) {
-            isCheckMate = true;
-            return Integer.MAX_VALUE;
+        if (capturedPiece != Piece.EMPTY) {
+            if (capturedPiece.getIsWhite()) {
+                scoreOfWhitePieces -= capturedPiece.getValue();
+            } else {
+                scoreOfBlackPieces -= capturedPiece.getValue();
+            }
         }
 
         var score = switch (move.type()) {
             case CASTLING -> makeCastlingMove(move);
             case DOUBLE_PAWN_PUSH -> makeDoublePawnPush(move);
-            case EN_PASSANT -> makeEnPassantMove(move);
-            case QUEEN_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN);
-            case ROOK_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK);
-            case BISHOP_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP);
-            case KNIGHT_PROMOTION -> makePromotionMove(move, isWhiteTurn ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT);
-            case FIRST_MOVE -> makeFirstMove(move);
-            default -> makeRegularMove(move);
+            case EN_PASSANT -> makeEnPassantMove(move, isEvalGuess);
+            case QUEEN_PROMOTION ->
+                    makePromotionMove(move, isWhiteTurn ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN, isEvalGuess);
+            case ROOK_PROMOTION ->
+                    makePromotionMove(move, isWhiteTurn ? Piece.WHITE_ROOK : Piece.BLACK_ROOK, isEvalGuess);
+            case BISHOP_PROMOTION ->
+                    makePromotionMove(move, isWhiteTurn ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP, isEvalGuess);
+            case KNIGHT_PROMOTION ->
+                    makePromotionMove(move, isWhiteTurn ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT, isEvalGuess);
+            case FIRST_MOVE -> makeFirstMove(move, isEvalGuess);
+            default -> makeRegularMove(move, isEvalGuess);
         };
 
-        board[move.from()] = Piece.EMPTY;
+        board[from] = Piece.EMPTY;
         if (board[to] == Piece.WHITE_KING) {
             whiteKingIndex = to;
         } else if (board[to] == Piece.BLACK_KING) {
@@ -99,7 +129,23 @@ public class Board {
         if (!isWhiteTurn) {
             fullMoveNumber++;
         }
-        setWhiteTurn(!isWhiteTurn);
+        isWhiteTurn = !isWhiteTurn;
+        isPlayer = !isPlayer;
+
+        var hash = Arrays.hashCode(board);
+        var repetitionCount = repetitionMap.getOrDefault(hash, (byte) 0);
+        repetitionMap.put(hash, ++repetitionCount);
+
+        if (movePiece == Piece.WHITE_PAWN || movePiece == Piece.BLACK_PAWN || capturedPiece != Piece.EMPTY) {
+            halfMoveClock = 0;
+        } else {
+            halfMoveClock++;
+            if (halfMoveClock >= 100) {
+                isStalemate = true;
+                return 0;
+            }
+        }
+
         return score;
     }
 
@@ -121,13 +167,11 @@ public class Board {
 
     public int getStaticEvaluation() {
         var score = 0;
-        for (int i = 0; i < 64; i++) {
-            var piece = board[i];
-            if (piece == Piece.EMPTY) {
-                continue;
-            }
-            score += piece.getValue();
-        }
+        score += getMaterialScore();
+        score += getOpponentKingAttackScore();
+        score += getPawnShieldScore();
+
+
         return score;
     }
 
@@ -135,7 +179,8 @@ public class Board {
     public String toString() {
         var sb = new StringBuilder();
         for (var i = 0; i < 64; i++) {
-            sb.append(board[i].toFen()).append(" ");
+            sb.append(board[i].toFen())
+                    .append(" ");
             if (i % 8 == 7) {
                 sb.append("\n");
             }
@@ -171,6 +216,8 @@ public class Board {
         );
         whiteKingIndex = 60;
         blackKingIndex = 4;
+        scoreOfBlackPieces = (int) MAX_VALUE_WITHOUT_KING;
+        scoreOfWhitePieces = (int) MAX_VALUE_WITHOUT_KING;
     }
 
     private void addPieces(int startingIndex, Piece... pieces) {
@@ -189,11 +236,15 @@ public class Board {
         }
     }
 
-    private int makeRegularMove(Move move) {
+    private int makeRegularMove(Move move, boolean isEvalGuess) {
         var capturedPiece = board[move.to()];
         var movePiece = board[move.from()];
 
         board[move.to()] = board[move.from()];
+
+        if (!isEvalGuess) {
+            return 0;
+        }
 
         if (capturedPiece == Piece.EMPTY) {
             return 0;
@@ -201,29 +252,34 @@ public class Board {
         return Math.abs(10 * capturedPiece.getValue() - movePiece.getValue());
     }
 
-    private int makePromotionMove(Move move, Piece piece) {
+    private int makePromotionMove(Move move, Piece piece, boolean isEvalGuess) {
         var capturedPiece = board[move.to()];
         var movePiece = board[move.from()];
 
         board[move.to()] = piece;
 
-        if(capturedPiece == Piece.EMPTY) {
-            return Math.abs(piece.getValue());
+        if (!isEvalGuess) {
+            return 0;
         }
+
+        if (capturedPiece == Piece.EMPTY) {
+            return piece.getValue();
+        }
+
         return Math.abs(10 * capturedPiece.getValue() - movePiece.getValue() + piece.getValue());
     }
 
-    private int makeEnPassantMove(Move move) {
+    private int makeEnPassantMove(Move move, boolean isEvalGuess) {
         var captureIndex = isWhiteTurn ?
                 move.to() + Direction.DOWN.getOffset() :
                 move.to() + Direction.UP.getOffset();
-        makeRegularMove(move);
+        makeRegularMove(move, isEvalGuess);
         board[captureIndex] = Piece.EMPTY;
         return 900;
     }
 
     private int makeDoublePawnPush(Move move) {
-        makeRegularMove(move);
+        makeRegularMove(move, false);
         enPassantSquare = isWhiteTurn ?
                 move.from() + Direction.UP.getOffset() :
                 move.from() + Direction.DOWN.getOffset();
@@ -231,7 +287,7 @@ public class Board {
     }
 
     private int makeCastlingMove(Move move) {
-        makeRegularMove(move);
+        makeRegularMove(move, false);
         switch (move.to()) {
             case 2 -> {
                 board[3] = Piece.BLACK_ROOK;
@@ -247,7 +303,7 @@ public class Board {
             }
             case 58 -> {
                 board[59] = Piece.WHITE_ROOK;
-                board[56] =Piece.EMPTY;
+                board[56] = Piece.EMPTY;
                 isWhiteKingSideCastle = false;
                 isWhiteQueenSideCastle = false;
             }
@@ -262,8 +318,8 @@ public class Board {
         return 1000;
     }
 
-    private int makeFirstMove(Move move) {
-        var score = makeRegularMove(move);
+    private int makeFirstMove(Move move, boolean isEvalGuess) {
+        var score = makeRegularMove(move, isEvalGuess);
         switch (board[move.from()]) {
             case WHITE_KING -> {
                 isWhiteKingSideCastle = false;
@@ -289,6 +345,183 @@ public class Board {
             }
         }
         return score;
+    }
+
+    private int getMaterialScore() {
+        var score = 0;
+        var scoreOfOpponentPieces = isWhiteTurn ? scoreOfBlackPieces : scoreOfWhitePieces;
+        var endgameWeight = (1.00001 - scoreOfOpponentPieces / MAX_VALUE_WITHOUT_KING);
+
+        for (int i = 0; i < 64; i++) {
+            var piece = board[i];
+            if (piece == Piece.EMPTY) {
+                continue;
+            }
+            score += switch (piece) {
+                case WHITE_PAWN -> getPawnScore(i, endgameWeight, true);
+                case BLACK_PAWN -> getPawnScore(i, endgameWeight, false);
+                case WHITE_KNIGHT -> WHITE_KNIGHT_EVAL[i];
+                case BLACK_KNIGHT -> -BLACK_KNIGHT_EVAL[i];
+                case WHITE_BISHOP -> WHITE_BISHOP_EVAL[i];
+                case BLACK_BISHOP -> -BLACK_BISHOP_EVAL[i];
+                case WHITE_ROOK -> WHITE_ROOK_EVAL[i];
+                case BLACK_ROOK -> -BLACK_ROOK_EVAL[i];
+                case WHITE_QUEEN -> WHITE_QUEEN_EVAL[i];
+                case BLACK_QUEEN -> -BLACK_QUEEN_EVAL[i];
+                case WHITE_KING -> endgameInterpolation(WHITE_KING_EVAL[i], WHITE_KING_EVAL_END[i], endgameWeight);
+                case BLACK_KING -> -endgameInterpolation(BLACK_KING_EVAL[i], BLACK_KING_EVAL_END[i], endgameWeight);
+                default -> 0;
+            };
+        }
+        return score;
+    }
+
+    private int getPawnScore(int i, double endgameWeight, boolean isWhite) {
+        var score = 0;
+        var pawnEval = isWhite ? WHITE_PAWN_EVAL : BLACK_PAWN_EVAL;
+        var pawnEvalEnd = isWhite ? WHITE_PAWN_EVAL_END : BLACK_PAWN_EVAL_END;
+
+        score += endgameInterpolation(pawnEval[i], pawnEvalEnd[i], endgameWeight);
+        score += getDoublePawnAndPassedPawnScore(i, isWhite);
+
+        return isWhite ? score : -score;
+    }
+
+    private int endgameInterpolation(int initialScore, int endgameScore, double endgameWeight) {
+        return (int) (initialScore * (1 - endgameWeight) + endgameScore * endgameWeight);
+    }
+
+    private int getDoublePawnAndPassedPawnScore(int i, boolean isWhite) {
+        var column = getColumn(i);
+        var up = Direction.UP.getOffset();
+        var down = Direction.DOWN.getOffset();
+        var left = Direction.LEFT.getOffset();
+        var right = Direction.RIGHT.getOffset();
+        var isPassed = true;
+        var score = 0;
+
+        if(isWhite) {
+            for(int j = column - 1; j <= 63; j += down) {
+                if(j != i && board[j] == Piece.WHITE_PAWN) {
+                    score -= PAWN_VALUE / 8;
+                    if(j < i) {
+                        isPassed = false;
+                        break;
+                    }
+                }
+                if(j < i && isPassed) {
+                    if(board[j] == Piece.BLACK_PAWN) {
+                        isPassed = false;
+                    }
+                    if(column != 1 && board[j + left] == Piece.BLACK_PAWN) {
+                        isPassed = false;
+                    }
+                    if(column != 8 && board[j + right] == Piece.BLACK_PAWN) {
+                        isPassed = false;
+                    }
+                }
+            }
+        } else {
+            for(int j = column + 55; j >= 0; j += up) {
+                if(j != i && board[j] == Piece.BLACK_PAWN) {
+                    score -= PAWN_VALUE / 8;
+                    if(j > i) {
+                        isPassed = false;
+                        break;
+                    }
+                }
+                if(j > i && isPassed) {
+                    if(board[j] == Piece.WHITE_PAWN) {
+                        isPassed = false;
+                    }
+                    if(column != 1 && board[j + left] == Piece.WHITE_PAWN) {
+                        isPassed = false;
+                    }
+                    if(column != 8 && board[j + right] == Piece.WHITE_PAWN) {
+                        isPassed = false;
+                    }
+                }
+            }
+        }
+
+        if(isPassed) {
+            var scoreOfOpponentPieces = isWhite ? scoreOfBlackPieces : scoreOfWhitePieces;
+            score += (int) (2 * PAWN_VALUE * (1 - scoreOfOpponentPieces / MAX_VALUE_WITHOUT_KING));
+        }
+
+        return score;
+    }
+
+
+    private int getOpponentKingAttackScore() {
+        var opponentKingIndex = isWhiteTurn ? blackKingIndex : whiteKingIndex;
+        var scoreOfOpponentPieces = isWhiteTurn ? scoreOfBlackPieces : scoreOfWhitePieces;
+        var scoreOfFriendlyPieces = isWhiteTurn ? scoreOfWhitePieces : scoreOfBlackPieces;
+
+        if (scoreOfFriendlyPieces <= scoreOfOpponentPieces + PAWN_VALUE) {
+            return 0;
+        }
+
+        var distanceBetweenKings = PrecomputedConstants.MANHATTAN_DISTANCE[whiteKingIndex][blackKingIndex];
+        var distanceOfEnemyKingFromCenter = PrecomputedConstants.CENTER_MANHATTAN_DISTANCE[opponentKingIndex];
+
+        var score = (int) ((1 - scoreOfOpponentPieces / MAX_VALUE_WITHOUT_KING) * (5 * (14 - distanceBetweenKings) + 12 * distanceOfEnemyKingFromCenter));
+
+        return isWhiteTurn ? score : -score;
+    }
+
+    private int getPawnShieldScore() {
+        var kingIndex = isWhiteTurn ? whiteKingIndex : blackKingIndex;
+        var kingRow = getRow(kingIndex);
+        var kingColumn = getColumn(kingIndex);
+        var up = Direction.UP.getOffset();
+        var down = Direction.DOWN.getOffset();
+        var left = Direction.LEFT.getOffset();
+        var right = Direction.RIGHT.getOffset();
+        var score = 0;
+
+
+        if (isWhiteTurn && kingRow == 1 && (kingColumn == 2 || kingColumn == 3 || kingColumn == 6 || kingColumn == 7)) {
+            var above = kingIndex + up;
+            if (board[above] == Piece.WHITE_PAWN) {
+                score += 20;
+            }
+            if (board[above + left] == Piece.WHITE_PAWN) {
+                score += 10;
+            }
+            if (board[above + right] == Piece.WHITE_PAWN) {
+                score += 10;
+            }
+            if (score == 40) {
+                score += 10;
+            } else if (score == 0) {
+                score -= 20;
+            }
+        }
+        else if(!isWhiteTurn && kingRow == 8 && (kingColumn == 2 || kingColumn == 3 || kingColumn == 6 || kingColumn == 7)) {
+            var below = kingIndex + down;
+            if (board[below] == Piece.BLACK_PAWN) {
+                score += 20;
+            }
+            if (board[below + left] == Piece.BLACK_PAWN) {
+                score += 10;
+            }
+            if (board[below + right] == Piece.BLACK_PAWN) {
+                score += 10;
+            }
+            if (score == 40) {
+                score += 10;
+            } else if (score == 0) {
+                score -= 20;
+            }
+        } else {
+            return 0;
+        }
+
+        var scoreOfOpponentPieces = isWhiteTurn ? scoreOfBlackPieces : scoreOfWhitePieces;
+        var earlyGame =  scoreOfOpponentPieces / MAX_VALUE_WITHOUT_KING;
+
+        return (int) (isWhiteTurn ? score * earlyGame : -score * earlyGame);
     }
 
 }

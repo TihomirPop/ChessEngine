@@ -22,12 +22,12 @@ public class FenMapper {
     }
 
     public static Board fromFen(String fen) {
-        String[] parts = fen.split(" ");
+        var parts = fen.split(" ");
         if (parts.length != 6) {
             throw new IllegalArgumentException("Invalid FEN string: " + fen);
         }
 
-        Board board = Board.createEmptyBoard();
+        var board = Board.createEmptyBoard();
 
         parsePieces(parts[0], board);
         parseActiveColor(parts[1], board);
@@ -109,23 +109,36 @@ public class FenMapper {
     }
 
     private static void parsePieces(String pieces, Board board) {
-        int squareIndex = 0;
-        for (char c : pieces.toCharArray()) {
+        var squareIndex = 0;
+        var scoreOfWhitePieces = 0;
+        var scoreOfBlackPieces = 0;
+
+        for (var c : pieces.toCharArray()) {
             if (c == '/') {
                 continue;
             } else if (Character.isDigit(c)) {
                 squareIndex += c - '0';
             } else {
-                Piece piece = Piece.fromFen(c);
+                var piece = Piece.fromFen(c);
                 board.setPiece(squareIndex, piece);
-                if(piece == Piece.WHITE_KING) {
+                if (piece == Piece.WHITE_KING) {
                     board.setWhiteKingIndex(squareIndex);
-                } else if(piece == Piece.BLACK_KING) {
+                    scoreOfWhitePieces -= piece.getValue();
+                } else if (piece == Piece.BLACK_KING) {
                     board.setBlackKingIndex(squareIndex);
+                    scoreOfBlackPieces -= piece.getValue();
+                }
+                if (piece.getIsWhite()) {
+                    scoreOfWhitePieces += piece.getValue();
+                } else {
+                    scoreOfBlackPieces += piece.getValue();
                 }
                 squareIndex++;
             }
         }
+
+        board.setScoreOfWhitePieces(scoreOfWhitePieces);
+        board.setScoreOfBlackPieces(scoreOfBlackPieces);
     }
 
     private static void parseActiveColor(String activeColor, Board board) {
@@ -146,4 +159,5 @@ public class FenMapper {
             board.setEnPassantSquare(AlgebraicNotationMapper.fromAlgebraicNotation(enPassant));
         }
     }
+
 }

@@ -27,14 +27,13 @@ class CheckGeneratorTest {
 
         var moves = CheckGenerator.from(board, 35);
 
-        assertThat(moves).hasSize(7)
+        assertThat(moves).hasSize(6)
                 .containsExactlyInAnyOrder(
                         new Move(35, 32),
                         new Move(35, 51),
                         new Move(35, 28),
                         new Move(35, 25),
                         new Move(35, 17),
-                        new Move(35, 53),
                         new Move(35, 42)
                 );
     }

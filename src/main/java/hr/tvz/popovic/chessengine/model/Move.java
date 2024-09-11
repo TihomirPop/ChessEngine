@@ -1,12 +1,10 @@
 package hr.tvz.popovic.chessengine.model;
 
 import hr.tvz.popovic.chessengine.mapper.AlgebraicNotationMapper;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
+@EqualsAndHashCode
 @AllArgsConstructor
 @RequiredArgsConstructor
 public final class Move {
@@ -16,7 +14,20 @@ public final class Move {
     private final Type type;
     @Getter
     @Setter
+    @EqualsAndHashCode.Exclude
     private int guessEval;
+
+    public enum Type {
+        NORMAL,
+        CASTLING,
+        DOUBLE_PAWN_PUSH,
+        QUEEN_PROMOTION,
+        ROOK_PROMOTION,
+        BISHOP_PROMOTION,
+        KNIGHT_PROMOTION,
+        EN_PASSANT,
+        FIRST_MOVE
+    }
 
     public Move(int from, int to) {
         this((byte) from, (byte) to, Type.NORMAL);
@@ -52,18 +63,6 @@ public final class Move {
 
     public Type type() {
         return type;
-    }
-
-    public enum Type {
-        NORMAL,
-        CASTLING,
-        DOUBLE_PAWN_PUSH,
-        QUEEN_PROMOTION,
-        ROOK_PROMOTION,
-        BISHOP_PROMOTION,
-        KNIGHT_PROMOTION,
-        EN_PASSANT,
-        FIRST_MOVE
     }
 
 }
