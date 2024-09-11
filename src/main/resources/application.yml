@@ -1,3 +1,8 @@
 spring:
   application:
     name: ChessEngine
+
+lichess:
+  token: ${LICHESS_TOKEN}
+  name: ${LICHESS_NAME:CheckmateTVZ}
+  thinking-time: ${LICHESS_THINKING_TIME:600}
