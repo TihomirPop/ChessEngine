@@ -56,6 +56,10 @@ public class ChessService {
                 .toList();
     }
 
+    public List<Move> getMoves() {
+        return Generators.generateAllMoves(board);
+    }
+
     public MakeMoveResponse makeMove(int from, int to, int thinkingTime) {
         var move = Generators.generateAllMoves(board)
                 .stream()

@@ -34,6 +34,15 @@ public class ChessController {
         return ResponseEntity.ok(chessService.getMoves(from));
     }
 
+    @GetMapping("/moves")
+    public ResponseEntity<List<MoveDto>> getMovesFrom() {
+        List<MoveDto> moves = chessService.getMoves()
+                .stream()
+                .map(MoveDto::from)
+                .toList();
+        return ResponseEntity.ok(moves);
+    }
+
     @PostMapping("/move")
     public ResponseEntity<MakeMoveResponse> move(@RequestBody MakeMoveRequest request) {
         return ResponseEntity.ok(chessService.makeMove(request.from(), request.to(), request.thinkingTime()));
