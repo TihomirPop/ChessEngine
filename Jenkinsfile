@@ -32,6 +32,16 @@ pipeline {
                 """
             }
         }
+        stage('Push') {
+            steps {
+                sh "docker push ${imageTag}"
+            }
+            post {
+                always {
+                    sh "docker rmi ${imageTag} || true"
+                }
+            }
+        }
     }
     post {
         always {
