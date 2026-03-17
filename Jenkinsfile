@@ -8,7 +8,7 @@ pipeline {
         stage('Prepare') {
             steps {
                 script {
-                    imageTag = "localhost:5000/${appName}:${env.BUILD_NUMBER}-${env.GIT_COMMIT?.take(7) ?: 'latest'}"
+                    imageTag = "${env.REGISTRY_URL}/${appName}:${env.BUILD_NUMBER}-${env.GIT_COMMIT?.take(7) ?: 'latest'}"
                 }
             }
         }
