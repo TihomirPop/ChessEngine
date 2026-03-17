@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    def appName = "chess-engine"
+    def imageTag = "localhost:5000/${appName}:${env.BUILD_NUMBER}-${env.GIT_COMMIT?.take(7) ?: 'latest'}"
+
     stages {
         stage('Test') {
             steps {
@@ -9,6 +12,16 @@ pipeline {
                 always {
                     junit '**/target/surefire-reports/*.xml'
                 }
+            }
+        }
+        stage('Dockerize') {
+            steps {
+                sh """
+                    mvn spring-boot:build-image \
+                        -DskipTests \
+                        -Dspring-boot.build-image.imageName=${imageTag} \
+                        --no-transfer-progress
+                """
             }
         }
     }
