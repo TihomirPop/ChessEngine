@@ -1,9 +1,17 @@
+def appName = "chess-engine"
+def imageTag = ""
+
 pipeline {
     agent any
-    def appName = "chess-engine"
-    def imageTag = "localhost:5000/${appName}:${env.BUILD_NUMBER}-${env.GIT_COMMIT?.take(7) ?: 'latest'}"
 
     stages {
+        stage('Prepare') {
+            steps {
+                script {
+                    imageTag = "localhost:5000/${appName}:${env.BUILD_NUMBER}-${env.GIT_COMMIT?.take(7) ?: 'latest'}"
+                }
+            }
+        }
         stage('Test') {
             steps {
                 sh 'mvn test --no-transfer-progress'
