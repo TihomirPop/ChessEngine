@@ -54,7 +54,7 @@ pipeline {
             echo "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} failed."
         }
         unstable {
-            echo "Build ${env.BUILD_NUMBER} is unstable — some tests failed."
+            echo "Build ${env.BUILD_NUMBER} is unstable - some tests failed."
         }
     }
 }
