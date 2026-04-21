@@ -49,13 +49,7 @@ pipeline {
                         rabbitName: 'rabbitmq',
                         exchange: 'ci-events',
                         routingKey: 'pipeline.completed',
-                        data: """
-                            event=pipeline_completed
-                            status=success
-                            repo=${env.GIT_URL}
-                            tag=${imageTag}
-                            buildNumber=${env.BUILD_NUMBER}
-                        """,
+                        data: "event=pipeline_completed\nstatus=success\nrepo=${env.GIT_URL}\ntag=${imageTag}\nbuildNumber=${env.BUILD_NUMBER}",
                         toJson: true
                     )
                 }
