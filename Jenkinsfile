@@ -48,16 +48,15 @@ pipeline {
                     rabbitMQPublisher(
                         rabbitName: 'rabbitmq',
                         exchange: 'ci-events',
-                        exchangeType: 'topic',
                         routingKey: 'pipeline.completed',
-                        message: """
+                        data: """
                             event=pipeline_completed
                             status=success
                             repo=${env.GIT_URL}
                             tag=${imageTag}
                             buildNumber=${env.BUILD_NUMBER}
                         """,
-                        convertToJson: true
+                        toJson: true
                     )
                 }
             }
