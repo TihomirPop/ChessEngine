@@ -48,7 +48,7 @@ pipeline {
             cleanWs()
         }
         success {
-            echo "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} succeeded."
+            echo "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} succeeded!"
         }
         failure {
             echo "Build ${env.BUILD_NUMBER} of ${env.JOB_NAME} failed."
